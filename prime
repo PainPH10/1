@@ -1644,4 +1644,3 @@ RunService.Heartbeat:Connect(function()
         AutoInfoLabel.Text = "Mục tiêu: Chưa chọn\nChế độ: Bám chót đuôi"
     end
 end)
-m
