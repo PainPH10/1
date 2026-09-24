@@ -1,4 +1,4 @@
--- Primeval Earth - By 0painph10 (Update: Tab All + Auto Tap)
+-- Primeval Earth - By 0painph10 (Update: Tab All + Auto Tap + Tab Notice)
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -142,22 +142,22 @@ ToggleBtn.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
--- THANH CHỌN TAB (4 TAB: Universal, Farm, All, TP)
+-- THANH CHỌN TAB (5 TAB: Universal, Farm, All, TP, Notice)
 local TabContainer = Instance.new("Frame")
 TabContainer.Size = UDim2.new(1, -20, 0, 28)
 TabContainer.Position = UDim2.new(0, 10, 0, 55)
 TabContainer.BackgroundTransparency = 1
 TabContainer.Parent = MainFrame
 
-local function CreateTabBtn(name, posX)
+local function CreateTabBtn(name, posX, sizeX)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.23, 0, 1, 0)
+    btn.Size = UDim2.new(sizeX or 0.18, 0, 1, 0)
     btn.Position = UDim2.new(posX, 0, 0, 0)
     btn.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
     btn.TextColor3 = Color3.fromRGB(140, 140, 150)
     btn.Text = name
     btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 10
+    btn.TextSize = 9
     btn.Parent = TabContainer
     
     local corner = Instance.new("UICorner")
@@ -166,10 +166,11 @@ local function CreateTabBtn(name, posX)
     return btn
 end
 
-local UniversalTabBtn = CreateTabBtn("Universal", 0)
-local FarmTabBtn = CreateTabBtn("Farm", 0.25)
-local AllTabBtn = CreateTabBtn("All", 0.5)
-local TpTabBtn = CreateTabBtn("TP", 0.75)
+local UniversalTabBtn = CreateTabBtn("Universal", 0, 0.19)
+local FarmTabBtn = CreateTabBtn("Farm", 0.20, 0.19)
+local AllTabBtn = CreateTabBtn("All", 0.40, 0.19)
+local TpTabBtn = CreateTabBtn("TP", 0.60, 0.19)
+local NoticeTabBtn = CreateTabBtn("Notice", 0.80, 0.20)
 
 -- CÁC TRANG (PAGES)
 local function CreatePage()
@@ -192,13 +193,14 @@ UniversalTabBtn.TextColor3 = Color3.fromRGB(0, 255, 170)
 local FarmPage = CreatePage()
 local AllPage = CreatePage()
 local TpPage = CreatePage()
+local NoticePage = CreatePage()
 
 local function SwitchTab(activeBtn, activePage)
-    for _, btn in ipairs({UniversalTabBtn, FarmTabBtn, AllTabBtn, TpTabBtn}) do
+    for _, btn in ipairs({UniversalTabBtn, FarmTabBtn, AllTabBtn, TpTabBtn, NoticeTabBtn}) do
         btn.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
         btn.TextColor3 = Color3.fromRGB(140, 140, 150)
     end
-    for _, page in ipairs({UniversalPage, FarmPage, AllPage, TpPage}) do
+    for _, page in ipairs({UniversalPage, FarmPage, AllPage, TpPage, NoticePage}) do
         page.Visible = false
     end
 
@@ -211,6 +213,7 @@ UniversalTabBtn.MouseButton1Click:Connect(function() SwitchTab(UniversalTabBtn, 
 FarmTabBtn.MouseButton1Click:Connect(function() SwitchTab(FarmTabBtn, FarmPage) end)
 AllTabBtn.MouseButton1Click:Connect(function() SwitchTab(AllTabBtn, AllPage) end)
 TpTabBtn.MouseButton1Click:Connect(function() SwitchTab(TpTabBtn, TpPage) end)
+NoticeTabBtn.MouseButton1Click:Connect(function() SwitchTab(NoticeTabBtn, NoticePage) end)
 
 ---------------------------------------------------------
 -- CHỨC NĂNG VÀ BIẾN TOÀN CỤC
@@ -241,6 +244,43 @@ local function StyleButton(btn)
     corner.CornerRadius = UDim.new(0, 6)
     corner.Parent = btn
 end
+
+---------------------------------------------------------
+-- TAB NOTICE (THÔNG BÁO)
+---------------------------------------------------------
+local NoticeBox = Instance.new("Frame")
+NoticeBox.Size = UDim2.new(1, 0, 0, 160)
+NoticeBox.Position = UDim2.new(0, 0, 0, 10)
+NoticeBox.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+NoticeBox.Parent = NoticePage
+StyleButton(NoticeBox)
+
+local NoticeStroke = Instance.new("UIStroke")
+NoticeStroke.Color = Color3.fromRGB(255, 50, 50)
+NoticeStroke.Thickness = 1.2
+NoticeStroke.Parent = NoticeBox
+
+local NoticeTitle = Instance.new("TextLabel")
+NoticeTitle.Size = UDim2.new(1, -10, 0, 25)
+NoticeTitle.Position = UDim2.new(0, 5, 0, 5)
+NoticeTitle.BackgroundTransparency = 1
+NoticeTitle.TextColor3 = Color3.fromRGB(255, 60, 60)
+NoticeTitle.Text = "⚠️ CẢNH BÁO BAN (NOTICE)"
+NoticeTitle.Font = Enum.Font.GothamBold
+NoticeTitle.TextSize = 12
+NoticeTitle.Parent = NoticeBox
+
+local NoticeText = Instance.new("TextLabel")
+NoticeText.Size = UDim2.new(1, -20, 1, -35)
+NoticeText.Position = UDim2.new(0, 10, 0, 30)
+NoticeText.BackgroundTransparency = 1
+NoticeText.TextColor3 = Color3.fromRGB(240, 240, 240)
+NoticeText.Text = "mấy thằng ngu chơi ban nghe tao nói bật bay chỉnh max thì chịu ban đi còn muốn không ban thì chỉnh dưới 100"
+NoticeText.Font = Enum.Font.GothamBold
+NoticeText.TextSize = 12
+NoticeText.TextWrapped = true
+NoticeText.TextYAlignment = Enum.TextYAlignment.Top
+NoticeText.Parent = NoticeBox
 
 ---------------------------------------------------------
 -- TAB UNIVERSAL
@@ -1445,7 +1485,6 @@ AutoOrbitBtn.MouseButton1Click:Connect(function()
     if getgenv().AutoOrbitEnabled then
         AutoOrbitBtn.Text = "BÁM CHÓT ĐUÔI: BẬT"
         AutoOrbitBtn.TextColor3 = Color3.fromRGB(0, 255, 170)
-        targetPlayer = GetClosestPlayer()
     else
         AutoOrbitBtn.Text = "BÁM CHÓT ĐUÔI: TẮT"
         AutoOrbitBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1454,9 +1493,8 @@ AutoOrbitBtn.MouseButton1Click:Connect(function()
 end)
 
 SwitchTargetBtn.MouseButton1Click:Connect(function()
-    targetPlayer = GetNextClosestPlayer(targetPlayer)
     if targetPlayer then
-        SwitchTargetBtn.Text = "Đã đổi sang: " .. targetPlayer.Name
+        SwitchTargetBtn.Text = "Đã đổi mục tiêu!"
         task.wait(1)
         SwitchTargetBtn.Text = "ĐỔI MỤC TIÊU (CHUYỂN SANG ĐỊCH KHÁC)"
     else
@@ -1508,139 +1546,5 @@ RunService.Stepped:Connect(function()
     
     if getgenv().SpeedEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         LocalPlayer.Character.Humanoid.WalkSpeed = getgenv().WalkSpeedValue
-    end
-end)
-
-function GetTrueTailPart(character)
-    if not character then return nil end
-    local tailKeywords = {"tail3", "tailend", "tail_end", "tail2", "tail1", "tail"}
-    for _, name in ipairs(tailKeywords) do
-        for _, part in pairs(character:GetDescendants()) do
-            if part:IsA("BasePart") and string.find(string.lower(part.Name), name) then
-                return part
-            end
-        end
-    end
-    
-    local root = character:FindFirstChild("HumanoidRootPart")
-    if not root then return nil end
-    local furthestPart = root
-    local maxRearDistance = -math.huge
-    for _, part in pairs(character:GetChildren()) do
-        if part:IsA("BasePart") and part ~= root then
-            local localPos = root.CFrame:PointToObjectSpace(part.Position)
-            if localPos.Z > maxRearDistance then
-                maxRearDistance = localPos.Z
-                furthestPart = part
-            end
-        end
-    end
-    return furthestPart
-end
-
-function GetClosestPlayer()
-    local closest = nil
-    local shortestDistance = math.huge
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local humanoid = player.Character:FindFirstChild("Humanoid")
-            if humanoid and humanoid.Health > 0 then
-                local rootPart = player.Character.HumanoidRootPart
-                local screenPoint, onScreen = Camera:WorldToViewportPoint(rootPart.Position)
-                if onScreen then
-                    local mousePos = UserInputService:GetMouseLocation()
-                    local distance = (Vector2.new(screenPoint.X, screenPoint.Y) - mousePos).Magnitude
-                    if distance < shortestDistance then
-                        shortestDistance = distance
-                        closest = player
-                    end
-                end
-            end
-        end
-    end
-    return closest
-end
-
-function GetNextClosestPlayer(currentToken)
-    local playersList = {}
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local humanoid = player.Character:FindFirstChild("Humanoid")
-            if humanoid and humanoid.Health > 0 then
-                table.insert(playersList, player)
-            end
-        end
-    end
-
-    if #playersList == 0 then return nil end
-
-    table.sort(playersList, function(a, b)
-        local myRoot = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if not myRoot then return false end
-        local distA = (a.Character.HumanoidRootPart.Position - myRoot.Position).Magnitude
-        local distB = (b.Character.HumanoidRootPart.Position - myRoot.Position).Magnitude
-        return distA < distB
-    end)
-
-    if not currentToken then
-        return playersList[1]
-    end
-
-    for i, p in ipairs(playersList) do
-        if p == currentToken then
-            local nextIndex = i + 1
-            if nextIndex > #playersList then
-                nextIndex = 1
-            end
-            return playersList[nextIndex]
-        end
-    end
-
-    return playersList[1]
-end
-
-RunService.Heartbeat:Connect(function()
-    highlightFolder:ClearAllChildren()
-    if getgenv().ScanHitboxEnabled then
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                local char = player.Character
-                local hum = char:FindFirstChild("Humanoid")
-                if hum and hum.Health > 0 then
-                    for _, part in pairs(char:GetChildren()) do
-                        if part:IsA("BasePart") then
-                            local box = Instance.new("BoxHandleAdornment")
-                            box.Size = part.Size + Vector3.new(0.3, 0.3, 0.3)
-                            box.Adornee = part
-                            box.AlwaysOnTop = true
-                            box.ZIndex = 4
-                            box.Transparency = 0.5
-                            box.Color3 = Color3.fromRGB(255, 50, 50)
-                            box.Parent = highlightFolder
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    if getgenv().AutoOrbitEnabled and targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character then
-        local enemyRoot = targetPlayer.Character.HumanoidRootPart
-        local myRoot = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        
-        if myRoot then
-            local tailPart = GetTrueTailPart(targetPlayer.Character)
-            local tailPos = tailPart and tailPart.Position or enemyRoot.Position
-            local rearDirection = -enemyRoot.CFrame.LookVector
-            local targetPos = tailPos + (rearDirection * getgenv().CustomOffset)
-            
-            AutoInfoLabel.Text = string.format("Mục tiêu: %s\nĐang bám: %s", targetPlayer.Name, tailPart and tailPart.Name or "Đuôi")
-            
-            myRoot.CFrame = CFrame.new(targetPos, enemyRoot.Position)
-            myRoot.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            myRoot.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-        end
-    else
-        AutoInfoLabel.Text = "Mục tiêu: Chưa chọn\nChế độ: Bám chót đuôi"
     end
 end)
