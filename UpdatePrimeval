@@ -1,9 +1,10 @@
--- Primeval Earth Hub UI (Cập nhật: Tích hợp Auto Ăn Thịt & Auto Ăn Cỏ vào Tab Fossils)
+-- Primeval Earth Hub UI (Cập nhật: Đã thêm lại Auto Ăn Cỏ)
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+local Plr = LocalPlayer -- Định nghĩa alias Plr theo đoạn code bạn cung cấp
 local VirtualUser = game:GetService("VirtualUser")
 local Camera = workspace.CurrentCamera
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -164,7 +165,7 @@ _G.AutoZoneRunning = false
 _G.AutoFarmAmmo = false
 _G.AutoAttackRunning = false
 _G.AutoEatActive = false -- Auto Ăn Thịt
-_G.AutoHerbActive = false -- Auto Ăn Cỏ mới
+_G.AutoEatRunning = false -- Auto Ăn Cỏ
 _G.CurrentQuest = "None"
 
 local EspSettings = {
@@ -775,7 +776,7 @@ local function checkAmmoStatus()
     if currentAmmo ~= nil and reserveAmmo ~= nil then
         return currentAmmo, reserveAmmo, string.format("Đạn: %02d/%d", currentAmmo, reserveAmmo)
     elseif reserveAmmo ~= nil then
-        return currentAmmo or 0, reserveAmmo, "Đạn dự trữ: /" .. reserveAmmo
+        return currentAmmo or 0, reserveAmmo, "Đạn dự trữ: /" + reserveAmmo
     end
 
     return nil, nil, "Đang quét UI đạn..."
@@ -1150,10 +1151,10 @@ UI.AddToggle(PvpTab, "Auto Nhat Dan (Nhat 2 Lan)", false, function(state)
     end
 end)
 
--- Tab Fossils (Tích hợp Auto Ăn Thịt, Auto Ăn Cỏ & Các tính năng cũ)
+-- Tab Fossils (Tích hợp Auto Ăn Cỏ & Auto Ăn Thịt)
 local QuestStatusLabel = UI.AddLabel(FossilsTab, "Quest Hiện Tại: Đang chờ...")
+UI.AddToggle(FossilsTab, "Auto Ăn Cỏ (Auto Eat Grass)", false, function(state) _G.AutoEatRunning = state end)
 UI.AddToggle(FossilsTab, "Auto Ăn Thịt (Toggle Meat)", false, function(state) _G.AutoEatActive = state end)
-UI.AddToggle(FossilsTab, "Auto Ăn Cỏ (Toggle Herb)", false, function(state) _G.AutoHerbActive = state end)
 UI.AddToggle(FossilsTab, "Auto Drink (Uong Lien Tuc)", false, function(state) _G.AutoDrinkRunning = state end)
 UI.AddToggle(FossilsTab, "Auto Rest (Nghi Noi)", false, function(state) _G.AutoRestRunning = state end)
 UI.AddToggle(FossilsTab, "Auto Zone (Chiem Zone)", false, function(state) _G.AutoZoneRunning = state end)
@@ -1206,7 +1207,7 @@ UI.AddButton(VisualsTab, "Hoi Sinh Nhan Vat (Reset)", function()
 end)
 
 ----------------------------------------------------
--- 5. LOGIC CHẠY NGẦM (AUTO ATTACK, NHẶT ĐẠN, FOSSILS, AUTO ĂN THỊT/CỎ & ANTI-AFK)
+-- 5. LOGIC CHẠY NGẦM (AUTO ATTACK, NHẶT ĐẠN, FOSSILS, AUTO ĂN CỎ/THỊT & ANTI-AFK)
 ----------------------------------------------------
 LocalPlayer.Idled:Connect(function()
     VirtualUser:CaptureController()
@@ -1298,16 +1299,61 @@ task.spawn(function()
     end
 end)
 
--- LOGIC AUTO ĂN THỊT & ĂN CỎ CHUNG MỘT HỆ THỐNG BLINK
+-- LOGIC AUTO ĂN CỎ (Đã được thêm vào theo yêu cầu)
+task.spawn(function()
+	local remote = game:GetService("ReplicatedStorage").Remotes.Character.Eat
+	while true do
+		if _G.AutoEatRunning and _G.CurrentQuest == "Eat" then
+			pcall(function()
+				local char = Plr.Character
+				local hrp = char and char:FindFirstChild("HumanoidRootPart")
+				if hrp then
+					local env = workspace:FindFirstChild("MapEnvironment")
+					if env then
+						local closest = nil
+						local shortest = math.huge
+						local folders = {
+							{ F = env:FindFirstChild("RedWood") and env.RedWood:FindFirstChild("Trees"), N = "RedWoodTree" },
+							{ F = env:FindFirstChild("Pines") and env.Pines:FindFirstChild("Trees"), N = "PineTree" },
+							{ F = env:FindFirstChild("Desert") and env.Desert:FindFirstChild("Tress"), N = "DesertTree" },
+							{ F = env:FindFirstChild("Lobby") and env.Lobby:FindFirstChild("Trees"), N = "RedWoodTree" }
+						}
+						for _, conf in pairs(folders) do
+							if conf.F then
+								for _, tree in pairs(conf.F:GetChildren()) do
+									if tree.Name == conf.N then
+										local p = tree:IsA("BasePart") and tree or tree:FindFirstChildWhichIsA("BasePart")
+										if p and (hrp.Position - p.Position).Magnitude < shortest then
+											shortest = (hrp.Position - p.Position).Magnitude
+											closest = tree
+										end
+									end
+								end
+							end
+						end
+						
+						if closest then
+							remote:FireServer(closest)
+						end
+					end
+				end
+			end)
+			task.wait(0.4)
+		else
+			task.wait(0.2)
+		end
+	end
+end)
+
+-- LOGIC AUTO ĂN THỊT
 local EAT_CONFIG = {
     SEARCH_RADIUS = 350.0,
     STAY_DURATION = 0.35,
     CYCLE_INTERVAL = 0.4,
-    STRICT_MEAT_KEYWORDS = {"carcass", "meat", "corpse", "deadbody", "ribs", "flesh"},
-    STRICT_HERB_KEYWORDS = {"bush", "plant", "grass", "foliage", "herb", "fern", "leaves", "berry", "shrub"}
+    STRICT_MEAT_KEYWORDS = {"carcass", "meat", "corpse", "deadbody", "ribs", "flesh"}
 }
 
-local IsExecutingEatOrHerb = false
+local IsExecutingEat = false
 
 local function IsLivingEntityOrMapDecor(instance: Instance): boolean
     local ancestorModel = instance:FindFirstAncestorOfClass("Model")
@@ -1374,12 +1420,11 @@ local function TriggerInteraction(targetPart: BasePart)
             if remote:IsA("RemoteEvent") then
                 local rName = string.lower(remote.Name)
                 if rName:find("eat") or rName:find("bite") or rName:find("interact") 
-                   or rName:find("feed") or rName:find("consume") or rName:find("herb") or rName:find("graze") then
+                   or rName:find("feed") or rName:find("consume") then
                     
                     remote:FireServer(targetPart)
                     remote:FireServer(targetPart.Parent)
                     remote:FireServer("Eat", targetPart)
-                    remote:FireServer("Herb", targetPart)
                 end
             end
         end
@@ -1389,8 +1434,8 @@ end
 local function PerformBlink(targetPart: BasePart)
     local char = LocalPlayer.Character
     local root = char and char:FindFirstChild("HumanoidRootPart")
-    if IsExecutingEatOrHerb or not root or not char then return end
-    IsExecutingEatOrHerb = true
+    if IsExecutingEat or not root or not char then return end
+    IsExecutingEat = true
 
     pcall(function()
         local storedCFrame = root.CFrame
@@ -1421,7 +1466,7 @@ local function PerformBlink(targetPart: BasePart)
         end
     end)
 
-    IsExecutingEatOrHerb = false
+    IsExecutingEat = false
 end
 
 -- Vòng lặp Auto Ăn Thịt
@@ -1429,7 +1474,7 @@ task.spawn(function()
     while true do
         task.wait(EAT_CONFIG.CYCLE_INTERVAL)
         pcall(function()
-            if _G.AutoEatActive and not _G.AutoHerbActive then
+            if _G.AutoEatActive then
                 local char = LocalPlayer.Character
                 local root = char and char:FindFirstChild("HumanoidRootPart")
                 local hum = char and char:FindFirstChildOfClass("Humanoid")
@@ -1437,26 +1482,6 @@ task.spawn(function()
                     local meatNode = ScanNearbyTarget(EAT_CONFIG.STRICT_MEAT_KEYWORDS)
                     if meatNode then
                         PerformBlink(meatNode)
-                    end
-                end
-            end
-        end)
-    end
-end)
-
--- Vòng lặp Auto Ăn Cỏ
-task.spawn(function()
-    while true do
-        task.wait(EAT_CONFIG.CYCLE_INTERVAL)
-        pcall(function()
-            if _G.AutoHerbActive then
-                local char = LocalPlayer.Character
-                local root = char and char:FindFirstChild("HumanoidRootPart")
-                local hum = char and char:FindFirstChildOfClass("Humanoid")
-                if char and root and hum and hum.Health > 0 then
-                    local herbNode = ScanNearbyTarget(EAT_CONFIG.STRICT_HERB_KEYWORDS)
-                    if herbNode then
-                        PerformBlink(herbNode)
                     end
                 end
             end
@@ -1481,7 +1506,10 @@ task.spawn(function()
                         end
                     end
                     
-                    if string.find(textContent, "drink water") then
+                    if string.find(textContent, "eat") then
+                        detectedQuest = "Eat"
+                        break
+                    elseif string.find(textContent, "drink water") then
                         detectedQuest = "Drink"
                         break
                     elseif string.find(textContent, "rest") then
@@ -1493,7 +1521,10 @@ task.spawn(function()
             
             _G.CurrentQuest = detectedQuest
             
-            if detectedQuest == "Drink" then
+            if detectedQuest == "Eat" then
+                QuestStatusLabel.Text = "Quest Hiện Tại: Ăn (Eat)"
+                QuestStatusLabel.TextColor3 = Color3.fromRGB(50, 255, 100)
+            elseif detectedQuest == "Drink" then
                 QuestStatusLabel.Text = "Quest Hiện Tại: Uống Nước (Drink)"
                 QuestStatusLabel.TextColor3 = Color3.fromRGB(50, 150, 255)
             elseif detectedQuest == "Rest" then
@@ -1610,7 +1641,7 @@ task.spawn(function()
         {progress = 0.20, text = "Đang khởi tạo giao diện..."},
         {progress = 0.45, text = "Đang tải Tab Di chuyển & Teleport..."},
         {progress = 0.70, text = "Đang cấu hình ESP, PVP & Aimbot..."},
-        {progress = 0.90, text = "Đang kích hoạt Auto Ăn Thịt/Cỏ & Logic..."},
+        {progress = 0.90, text = "Đang kích hoạt Auto Ăn Cỏ/Thịt & Logic..."},
         {progress = 1.00, text = "Nạp hoàn tất 100%!"}
     }
 
