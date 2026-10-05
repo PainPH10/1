@@ -524,7 +524,6 @@ local autoEvolveEnabled = false -- Biến trạng thái tự động Evo
 -- CẤU HÌNH TÁCH TẮT BẬT ESP
 local espNameEnabled = false
 local espHealthEnabled = false
-local espDistanceEnabled = false
 
 -- ==================== LOGIC FLY ====================
 local char, hrp, hum
@@ -641,17 +640,6 @@ local function addEsp(otherPlayer)
     healthLabel.Font = Enum.Font.GothamBold
     healthLabel.LayoutOrder = 2
     healthLabel.Parent = billboard
-
-    local distLabel = Instance.new("TextLabel")
-    distLabel.Name = "DistLabel"
-    distLabel.Size = UDim2.new(1, 0, 0, 18)
-    distLabel.BackgroundTransparency = 1
-    distLabel.TextColor3 = Color3.fromRGB(255, 220, 80)
-    distLabel.TextStrokeTransparency = 0.3
-    distLabel.TextSize = 11
-    distLabel.Font = Enum.Font.GothamBold
-    distLabel.LayoutOrder = 3
-    billboard.Parent = espFolder
     
     RunService.RenderStepped:Connect(function()
         local isAnyEspActive = espNameEnabled or espHealthEnabled or espDistanceEnabled
