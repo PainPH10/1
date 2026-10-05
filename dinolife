@@ -521,7 +521,7 @@ local autoFarmWater = false     -- Nút nhặt dưới nước
 local jesusEnabled = false
 local autoEvolveEnabled = false -- Biến trạng thái tự động Evo
 
--- CẤU HÌNH TÁCH TẮT BẬT ESP
+-- CẤU HÌNH ESP TÊN & MÁU
 local espNameEnabled = false
 local espHealthEnabled = false
 
@@ -594,7 +594,7 @@ RunService.RenderStepped:Connect(function()
     ag.CFrame = cam.CFrame
 end)
 
--- ==================== LOGIC ESP ====================
+-- ==================== LOGIC ESP (ĐÃ SỬA LỖI) ====================
 local espFolder = Instance.new("Folder")
 espFolder.Name = "ESPFolder"
 espFolder.Parent = ScreenGui
@@ -613,6 +613,7 @@ local function addEsp(otherPlayer)
     billboard.Name = otherPlayer.Name .. "_ESP"
     billboard.Size = UDim2.new(0, 140, 0, 60)
     billboard.AlwaysOnTop = true
+    billboard.Parent = espFolder
     
     local listLayout = Instance.new("UIListLayout")
     listLayout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -642,16 +643,12 @@ local function addEsp(otherPlayer)
     healthLabel.Parent = billboard
     
     RunService.RenderStepped:Connect(function()
-        local isAnyEspActive = espNameEnabled or espHealthEnabled or espDistanceEnabled
-        if not isAnyEspActive then
+        if not espNameEnabled and not espHealthEnabled then
             billboard.Enabled = false
             return
         end
 
         local c = otherPlayer.Character
-        local myChar = LocalPlayer.Character
-        local myHrp = myChar and (myChar:FindFirstChild("HumanoidRootPart") or myChar.PrimaryPart)
-
         if c and c:FindFirstChild("Head") and c:FindFirstChild("Humanoid") then
             billboard.Adornee = c.Head
             billboard.Enabled = true
@@ -670,28 +667,26 @@ local function addEsp(otherPlayer)
             else
                 healthLabel.Visible = false
             end
-
-            if espDistanceEnabled and myHrp then
-                local distance = math.floor((myHrp.Position - c.Head.Position).Magnitude)
-                distLabel.Text = distance .. "m"
-                distLabel.Visible = true
-            else
-                distLabel.Visible = false
-            end
         else
             billboard.Enabled = false
         end
     end)
 end
 
-Players.PlayerAdded:Connect(function(p) p.CharacterAdded:Connect(function() addEsp(p) end) end)
+Players.PlayerAdded:Connect(function(p) 
+    p.CharacterAdded:Connect(function() 
+        task.wait(1)
+        addEsp(p) 
+    end) 
+end)
+
 Players.PlayerRemoving:Connect(function(p) removeEsp(p) end)
 
 for _, p in ipairs(Players:GetPlayers()) do
     if p ~= LocalPlayer then addEsp(p) end
 end
 
--- ==================== LOGIC TỰ ĐỘNG NHẬT TRÊN BỜ ====================
+-- ==================== LOGIC TỰ ĐỘNG NHẶT TRÊN BỜ ====================
 local function getHRP_AutoFarm()
     local c = LocalPlayer.Character
     if not c then return nil end
@@ -795,7 +790,7 @@ task.spawn(function()
     end
 end)
 
--- ==================== LOGIC TỰ ĐỘNG NHẬT DƯỚI NƯỚC ====================
+-- ==================== LOGIC TỰ ĐỘNG NHẶT DƯỚI NƯỚC ====================
 local TARGET_Y_WATER = -50.95
 local Y_TOLERANCE_WATER = 4
 
@@ -1053,10 +1048,6 @@ end)
 
 UI.AddToggle(VisualTab, "ESP Hiện Máu", false, function(state)
     espHealthEnabled = state
-end)
-
-UI.AddToggle(VisualTab, "ESP Khoảng Cách", false, function(state)
-    espDistanceEnabled = state
 end)
 
 -- Tab Cài Đặt
