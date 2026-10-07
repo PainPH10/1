@@ -30,27 +30,15 @@ body {
 /* Header */
 .header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding: 16px 20px;
 }
 .logo {
   font-weight: 800;
-  font-size: 20px;
+  font-size: 22px;
   color: #7c3aed;
   letter-spacing: -0.5px;
-}
-.theme-toggle {
-  background: #ffffff;
-  border: 1px solid #e9d5ff;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.08);
-  font-size: 18px;
 }
 
 /* Hero Section */
@@ -58,19 +46,6 @@ main {
   max-width: 800px;
   margin: 0 auto;
   padding: 10px 16px;
-}
-.badge-container {
-  text-align: center;
-  margin-bottom: 12px;
-}
-.badge {
-  background: #e9d5ff;
-  color: #6b21a8;
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: 1px;
 }
 .hero-title {
   text-align: center;
@@ -205,7 +180,7 @@ main {
 .card-footer {
   margin-top: auto;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   padding-top: 8px;
   border-top: 1px solid #f1f5f9;
@@ -214,14 +189,7 @@ main {
   color: #7c3aed;
   text-decoration: none;
   font-weight: 700;
-  font-size: 11px;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-}
-.count-info {
-  font-size: 11px;
-  color: #94a3b8;
+  font-size: 12px;
   display: flex;
   align-items: center;
   gap: 4px;
@@ -232,18 +200,14 @@ main {
 
 <div class="header">
   <div class="logo">PAIN SCRIPT</div>
-  <div class="theme-toggle">🌙</div>
 </div>
 
 <main>
-  <div class="badge-container">
-    <span class="badge">BLOG</span>
-  </div>
   <h1 class="hero-title">PAIN SCRIPT</h1>
   <div class="hero-sub">TẤT CẢ SCRIPT ROBLOX BẠN CẦN TẠI ĐÂY</div>
 
   <div class="search-box">
-    <input id="q" type="search" placeholder="Tìm kiếm bài viết...">
+    <input id="q" type="search" placeholder="Tìm kiếm script...">
     <button id="go">Tìm</button>
   </div>
 
@@ -301,8 +265,7 @@ function render(){
       <div class="card-body">
         <h2 class="card-title">${s.n}</h2>
         <div class="card-footer">
-          <a class="btn-link" href="${s.link}" target="_blank">ĐỌC THÊM &rarr;</a>
-          <span class="count-info">👁️ ${Math.floor(Math.random()*500 + 50)}</span>
+          <a class="btn-link" href="${s.link}" target="_blank">LẤY SCRIPT &rarr;</a>
         </div>
       </div>
     </div>
