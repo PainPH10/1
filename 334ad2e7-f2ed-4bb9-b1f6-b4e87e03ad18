@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pain Script</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050000;--panel:#120506;--line:#3a0b0e;--red:#e10600;--red2:#ff2a2a;--text:#f2e6e6;--mute:#9a7f80;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 50% -10%,#4a0000 0%,var(--bg) 55%) fixed,var(--bg);color:var(--text);font-family:Barlow,system-ui,sans-serif;min-height:100vh}
+main{max-width:860px;margin:0 auto;padding:56px 20px 80px}
+h1{font-family:'Bebas Neue',Impact,sans-serif;font-size:clamp(64px,16vw,132px);line-height:.9;margin:0;letter-spacing:2px;text-shadow:0 0 40px rgba(225,6,0,.55)}
+h1 span{color:var(--red);display:block;transform:skewX(-8deg);margin-left:.4em}
+.sub{color:var(--mute);margin:18px 0 32px;max-width:48ch;line-height:1.5}
+.search{display:flex;border:2px solid var(--red);background:var(--panel);box-shadow:0 0 28px rgba(225,6,0,.35)}
+.search input{flex:1;min-width:0;background:transparent;border:0;color:var(--text);font:600 18px Barlow,sans-serif;padding:16px}
+.search input:focus{outline:none}
+.search:focus-within{box-shadow:0 0 0 3px rgba(255,42,42,.45),0 0 36px rgba(225,6,0,.55)}
+.search button{background:var(--red);color:#fff;border:0;padding:0 22px;font:400 22px 'Bebas Neue',sans-serif;letter-spacing:1.5px;cursor:pointer}
+.search button:hover{background:var(--red2)}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 28px}
+.tags button{background:transparent;border:1px solid var(--line);color:var(--mute);padding:6px 14px;font:600 14px Barlow,sans-serif;cursor:pointer}
+.tags button:hover,.tags button.on{border-color:var(--red);color:#fff;background:#2a0306}
+.count{color:var(--mute);font-size:14px;margin-bottom:12px}
+.list{display:grid;gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--red);padding:16px 18px}
+.card h3{margin:0 0 4px;font:400 26px 'Bebas Neue',sans-serif;letter-spacing:1px}
+.card p{margin:0 0 12px;color:var(--mute);line-height:1.45}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;color:var(--mute)}
+.card pre{margin:12px 0 0;padding:12px;background:#000;border:1px solid var(--line);color:#ff8d8d;font:13px/1.5 ui-monospace,Consolas,monospace;overflow-x:auto;display:none}
+.card.open pre{display:block}
+.card button{background:transparent;border:1px solid var(--red);color:var(--red2);padding:6px 12px;font:600 13px Barlow,sans-serif;cursor:pointer}
+.card button:hover{background:var(--red);color:#fff}
+.card .btn{display:inline-block;border:1px solid var(--red);color:var(--red2);padding:6px 12px;font:600 13px Barlow,sans-serif;text-decoration:none}
+.card .btn:hover{background:var(--red);color:#fff}
+.empty{border:1px dashed var(--line);padding:32px;text-align:center;color:var(--mute)}
+mark{background:var(--red);color:#fff;padding:0 2px}
+button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+</style>
+</head>
+<body>
+<main>
+<h1>Pain<span>Script</span></h1>
+<p class="sub">Kho script gọn nhẹ. Gõ tên hoặc chủ đề để tìm script bạn cần.</p>
+<div class="search" role="search">
+<input id="q" type="search" placeholder="Tìm script... (vd: auto, night, speed)" aria-label="Tìm script" autocomplete="off">
+<button id="go">TÌM</button>
+</div>
+<div class="tags" id="tags"></div>
+<div class="count" id="count"></div>
+<div class="list" id="list"></div>
+</main>
+<script>
+const SCRIPTS=[
+{n:"Nox Hub",c:"Steal An Egg",d:"Script hub cho Steal An Egg.",link:"https://link4m.org/3QBxqhj"},
+{n:"Night Hub",c:"Steal An Egg",d:"Script hub cho Steal An Egg.",link:"https://link4m.net/2CCPNg"},
+];
+const $=id=>document.getElementById(id);
+const norm=s=>s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/g,'d');
+let cat='Tất cả';
+const cats=['Tất cả',...new Set(['Steal An Egg','Ride A Pet','Primeval Earth',...SCRIPTS.map(s=>s.c)])];
+function esc(s){return s.replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))}
+function hl(t,q){if(!q)return esc(t);const i=norm(t).indexOf(q);return i<0?esc(t):esc(t.slice(0,i))+'<mark>'+esc(t.slice(i,i+q.length))+'</mark>'+esc(t.slice(i+q.length))}
+function render(){
+ const q=norm($('q').value.trim());
+ const r=SCRIPTS.filter(s=>(cat==='Tất cả'||s.c===cat)&&(!q||norm(s.n+' '+s.d+' '+s.c).includes(q)));
+ $('tags').innerHTML=cats.map(c=>`<button class="${c===cat?'on':''}" data-c="${c}">${c}</button>`).join('');
+ $('count').textContent=r.length+' script';
+ $('list').innerHTML=r.length?r.map(s=>`<div class="card" data-i="${SCRIPTS.indexOf(s)}"><h3>${hl(s.n,q)}</h3><p>${hl(s.d,q)}</p><div class="meta"><span>${s.c}</span><span>${s.link?`<a class="btn" href="${s.link}" target="_blank" rel="noopener noreferrer">Mở link</a>`:`<button data-a="view">Xem</button> <button data-a="copy">Sao chép</button>`}</span></div>${s.code?`<pre>${esc(s.code)}</pre>`:""}</div>`).join(''):`<div class="empty">${q?'Không tìm thấy script nào. Thử từ khoá khác hoặc chọn "Tất cả".':'Chưa có script nào trong tab này.'}</div>`;
+}
+$('q').addEventListener('input',render);
+$('go').addEventListener('click',render);
+$('tags').addEventListener('click',e=>{const c=e.target.dataset.c;if(c){cat=c;render()}});
+$('list').addEventListener('click',e=>{
+ const a=e.target.dataset.a,card=e.target.closest('.card');if(!a||!card)return;
+ if(a==='view')card.classList.toggle('open');
+ if(a==='copy'){const t=SCRIPTS[card.dataset.i].code,b=e.target;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{b.textContent='Đã chép'}).catch(()=>{card.classList.add('open');b.textContent='Chép thủ công'});setTimeout(()=>b.textContent='Sao chép',1600)}
+});
+render();
+</script>
+</body>
+</html>
