@@ -150,16 +150,25 @@ main {
   display: flex;
   flex-direction: column;
 }
-.card-img {
+.card-img-box {
   width: 100%;
   height: 110px;
   background: linear-gradient(135deg, #c084fc, #f472b6);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+.card-img-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.card-img-placeholder {
   color: white;
   font-weight: 800;
-  font-size: 16px;
+  font-size: 14px;
   text-align: center;
   padding: 10px;
 }
@@ -218,22 +227,22 @@ main {
 <script>
 const SCRIPTS = [
   // Steal An Egg
-  {n:"Nox Hub", c:"Steal An Egg", link:"https://link4m.org/3QBxqhj"},
-  {n:"Night Hub", c:"Steal An Egg", link:"https://link4m.net/2CCPNg"},
-  {n:"Limbo Hub", c:"Steal An Egg", link:"https://link4m.net/8gijZ"},
-  {n:"Clout Hub", c:"Steal An Egg", link:"https://link4m.org/RHy2B"},
-  {n:"Neva Hub", c:"Steal An Egg", link:"https://link4m.org/MMk2q"},
-  {n:"PulseHub.gg", c:"Steal An Egg", link:"https://link4m.org/OvbtgoS"},
-  {n:"Chilli Hub", c:"Steal An Egg", link:"https://link4m.org/YEjVhKM"},
+  {n:"Nox Hub", c:"Steal An Egg", link:"https://link4m.org/3QBxqhj", img:"LINK_ANH_NOX_HUB_CUABAN"},
+  {n:"Night Hub", c:"Steal An Egg", link:"https://link4m.net/2CCPNg", img:""},
+  {n:"Limbo Hub", c:"Steal An Egg", link:"https://link4m.net/8gijZ", img:""},
+  {n:"Clout Hub", c:"Steal An Egg", link:"https://link4m.org/RHy2B", img:""},
+  {n:"Neva Hub", c:"Steal An Egg", link:"https://link4m.org/MMk2q", img:""},
+  {n:"PulseHub.gg", c:"Steal An Egg", link:"https://link4m.org/OvbtgoS", img:""},
+  {n:"Chilli Hub", c:"Steal An Egg", link:"https://link4m.org/YEjVhKM", img:""},
   
   // Ride A Pet
-  {n:"Chilli Hub", c:"Ride A Pet", link:"https://link4m.net/YEjVhKM"},
-  {n:"ChronnixHub", c:"Ride A Pet", link:"https://link4m.net/dURCgx"},
-  {n:"R Hub", c:"Ride A Pet", link:"https://link4m.net/Un5BcNem"},
+  {n:"Chilli Hub", c:"Ride A Pet", link:"https://link4m.net/YEjVhKM", img:""},
+  {n:"ChronnixHub", c:"Ride A Pet", link:"https://link4m.net/dURCgx", img:""},
+  {n:"R Hub", c:"Ride A Pet", link:"https://link4m.net/Un5BcNem", img:""},
 
   // Primeval Earth
-  {n:"Primeval Earth Mới", c:"Primeval Earth", link:"https://link4m.net/7baHImY"},
-  {n:"Primeval Earth Cũ", c:"Primeval Earth", link:"https://link4m.org/guPN2"}
+  {n:"Primeval Earth Mới", c:"Primeval Earth", link:"https://link4m.net/7baHImY", img:""},
+  {n:"Primeval Earth Cũ", c:"Primeval Earth", link:"https://link4m.org/guPN2", img:""}
 ];
 
 const colors = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b'];
@@ -259,8 +268,8 @@ function render(){
   // Render Cards
   $('list').innerHTML = filtered.map(s => `
     <div class="card">
-      <div class="card-img">
-        SCRIPT ${s.c.toUpperCase()}
+      <div class="card-img-box">
+        ${s.img ? `<img src="${s.img}" alt="${s.n}">` : `<div class="card-img-placeholder">SCRIPT ${s.c.toUpperCase()}</div>`}
       </div>
       <div class="card-body">
         <h2 class="card-title">${s.n}</h2>
