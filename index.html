@@ -11,32 +11,39 @@ box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:en
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *{box-sizing:border-box}
 body{margin:0;background:radial-gradient(ellipse at 50% -10%,#ffe6e6 0%,var(--bg) 55%) fixed,var(--bg);color:var(--text);font-family:Barlow,system-ui,sans-serif;min-height:100vh}
-main{max-width:860px;margin:0 auto;padding:56px 20px 80px}
-h1{font-family:'Bebas Neue',Impact,sans-serif;font-size:clamp(64px,16vw,132px);line-height:.9;margin:0;letter-spacing:2px;color:#1a1a1a;text-shadow:0 0 20px rgba(225,6,0,.15)}
+main{max-width:860px;margin:0 auto;padding:32px 16px 80px}
+h1{font-family:'Bebas Neue',Impact,sans-serif;font-size:clamp(48px,12vw,96px);line-height:.9;margin:0;letter-spacing:2px;color:#1a1a1a;text-shadow:0 0 20px rgba(225,6,0,.15)}
 h1 span{color:var(--red);display:block;transform:skewX(-8deg);margin-left:.4em}
-.sub{color:var(--mute);margin:18px 0 32px;max-width:48ch;line-height:1.5}
+.sub{color:var(--mute);margin:12px 0 24px;max-width:48ch;line-height:1.4;font-size:15px}
 .search{display:flex;border:2px solid var(--red);background:var(--panel);box-shadow:0 4px 12px rgba(225,6,0,.1)}
-.search input{flex:1;min-width:0;background:transparent;border:0;color:var(--text);font:600 18px Barlow,sans-serif;padding:16px}
+.search input{flex:1;min-width:0;background:transparent;border:0;color:var(--text);font:600 16px Barlow,sans-serif;padding:12px 14px}
 .search input:focus{outline:none}
 .search:focus-within{box-shadow:0 0 0 3px rgba(255,42,42,.25),0 4px 16px rgba(225,6,0,.15)}
-.search button{background:var(--red);color:#fff;border:0;padding:0 22px;font:400 22px 'Bebas Neue',sans-serif;letter-spacing:1.5px;cursor:pointer}
+.search button{background:var(--red);color:#fff;border:0;padding:0 18px;font:400 20px 'Bebas Neue',sans-serif;letter-spacing:1.5px;cursor:pointer}
 .search button:hover{background:var(--red2)}
-.tags{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 28px}
-.tags button{background:#fff;border:1px solid #dee2e6;color:var(--mute);padding:6px 14px;font:600 14px Barlow,sans-serif;cursor:pointer;border-radius:4px}
+
+/* Cấu hình hiển thị 2 cột/2 hàng */
+.tags{display:grid;grid-template-columns:repeat(2, 1fr);gap:8px;margin:16px 0 20px}
+.tags button{background:#fff;border:1px solid #dee2e6;color:var(--mute);padding:8px 10px;font:600 14px Barlow,sans-serif;cursor:pointer;border-radius:4px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tags button:hover,.tags button.on{border-color:var(--red);color:#fff;background:var(--red)}
+
 .count{color:var(--mute);font-size:14px;margin-bottom:12px}
-.list{display:grid;gap:14px}
-.card{background:var(--panel);border:1px solid #dee2e6;border-left:4px solid var(--red);padding:16px 18px;box-shadow:0 2px 8px rgba(0,0,0,.04);border-radius:0 4px 4px 0}
-.card h3{margin:0 0 4px;font:400 26px 'Bebas Neue',sans-serif;letter-spacing:1px;color:#1a1a1a}
-.card p{margin:0 0 12px;color:var(--mute);line-height:1.45}
-.meta{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px;color:var(--mute)}
-.card pre{margin:12px 0 0;padding:12px;background:#f1f3f5;border:1px solid #dee2e6;color:#d63384;font:13px/1.5 ui-monospace,Consolas,monospace;overflow-x:auto;display:none;border-radius:4px}
+
+/* Danh sách script chuyển thành 2 cột trên màn hình điện thoại & máy tính */
+.list{display:grid;grid-template-columns:repeat(2, 1fr);gap:10px}
+@media (max-width: 420px) {
+  .list{grid-template-columns:repeat(2, 1fr);} /* Ép 2 cột cả trên máy màn nhỏ */
+}
+
+.card{background:var(--panel);border:1px solid #dee2e6;border-left:4px solid var(--red);padding:12px;box-shadow:0 2px 6px rgba(0,0,0,.04);border-radius:0 4px 4px 0;display:flex;flex-direction:column;justify-content:space-between}
+.card h3{margin:0 0 4px;font:400 20px 'Bebas Neue',sans-serif;letter-spacing:0.5px;color:#1a1a1a;line-height:1.1}
+.card p{margin:0 0 8px;color:var(--mute);line-height:1.3;font-size:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.meta{display:flex;flex-direction:column;gap:6px;font-size:11px;color:var(--mute);margin-top:auto}
+.card pre{margin:8px 0 0;padding:8px;background:#f1f3f5;border:1px solid #dee2e6;color:#d63384;font:11px/1.4 ui-monospace,Consolas,monospace;overflow-x:auto;display:none;border-radius:4px}
 .card.open pre{display:block}
-.card button{background:transparent;border:1px solid var(--red);color:var(--red);padding:6px 12px;font:600 13px Barlow,sans-serif;cursor:pointer;border-radius:4px}
-.card button:hover{background:var(--red);color:#fff}
-.card .btn{display:inline-block;border:1px solid var(--red);color:var(--red);padding:6px 12px;font:600 13px Barlow,sans-serif;text-decoration:none;border-radius:4px}
-.card .btn:hover{background:var(--red);color:#fff}
-.empty{border:1px dashed #ced4da;padding:32px;text-align:center;color:var(--mute);background:#fff}
+.card button, .card .btn{background:transparent;border:1px solid var(--red);color:var(--red);padding:4px 8px;font:600 12px Barlow,sans-serif;cursor:pointer;border-radius:4px;text-align:center;text-decoration:none;display:block;width:100%}
+.card button:hover, .card .btn:hover{background:var(--red);color:#fff}
+.empty{grid-column:span 2;border:1px dashed #ced4da;padding:24px;text-align:center;color:var(--mute);background:#fff}
 mark{background:var(--red);color:#fff;padding:0 2px}
 button:focus-visible{outline:2px solid #000;outline-offset:2px}
 </style>
@@ -44,9 +51,9 @@ button:focus-visible{outline:2px solid #000;outline-offset:2px}
 <body>
 <main>
 <h1>Pain<span>Script</span></h1>
-<p class="sub">Kho script gọn nhẹ. Gõ tên hoặc chủ đề để tìm script bạn cần.</p>
+<p class="sub">Kho script gọn nhẹ. Gõ tên hoặc chọn danh mục để tìm script.</p>
 <div class="search" role="search">
-<input id="q" type="search" placeholder="Tìm script... (vd: auto, night, speed)" aria-label="Tìm script" autocomplete="off">
+<input id="q" type="search" placeholder="Tìm script..." aria-label="Tìm script" autocomplete="off">
 <button id="go">TÌM</button>
 </div>
 <div class="tags" id="tags"></div>
@@ -65,7 +72,7 @@ const SCRIPTS=[
 {n:"Chilli Hub",c:"Ride A Pet",d:"Script hub cho Ride A Pet.",link:"https://link4m.net/YEjVhKM"},
 {n:"ChronnixHub",c:"Ride A Pet",d:"Script hub cho Ride A Pet.",link:"https://link4m.net/dURCgx"},
 {n:"R Hub",c:"Ride A Pet",d:"Script hub cho Ride A Pet.",link:"https://link4m.net/Un5BcNem"},
-{n:"Primeval Earth Update Mới",c:"Primeval Earth",d:"Script bản cập nhật mới cho Primeval Earth.",link:"https://link4m.net/7baHImY"},
+{n:"Primeval Earth Mới",c:"Primeval Earth",d:"Script bản cập nhật mới cho Primeval Earth.",link:"https://link4m.net/7baHImY"},
 {n:"Primeval Earth Cũ",c:"Primeval Earth",d:"Script bản cũ cho Primeval Earth.",link:"https://link4m.org/guPN2"}
 ];
 const $=id=>document.getElementById(id);
@@ -79,7 +86,7 @@ function render(){
  const r=SCRIPTS.filter(s=>(cat==='Tất cả'||s.c===cat)&&(!q||norm(s.n+' '+s.d+' '+s.c).includes(q)));
  $('tags').innerHTML=cats.map(c=>`<button class="${c===cat?'on':''}" data-c="${c}">${c}</button>`).join('');
  $('count').textContent=r.length+' script';
- $('list').innerHTML=r.length?r.map(s=>`<div class="card" data-i="${SCRIPTS.indexOf(s)}"><h3>${hl(s.n,q)}</h3><p>${hl(s.d,q)}</p><div class="meta"><span>${s.c}</span><span>${s.link?`<a class="btn" href="${s.link}" target="_blank" rel="noopener noreferrer">Mở link</a>`:`<button data-a="view">Xem</button> <button data-a="copy">Sao chép</button>`}</span></div>${s.code?`<pre>${esc(s.code)}</pre>`:""}</div>`).join(''):`<div class="empty">${q?'Không tìm thấy script nào. Thử từ khoá khác hoặc chọn "Tất cả".':'Chưa có script nào trong tab này.'}</div>`;
+ $('list').innerHTML=r.length?r.map(s=>`<div class="card" data-i="${SCRIPTS.indexOf(s)}"><div><h3>${hl(s.n,q)}</h3><p>${hl(s.d,q)}</p></div><div class="meta"><span>${s.c}</span><span>${s.link?`<a class="btn" href="${s.link}" target="_blank" rel="noopener noreferrer">Mở link</a>`:`<button data-a="view">Xem</button> <button data-a="copy">Sao chép</button>`}</span></div>${s.code?`<pre>${esc(s.code)}</pre>`:""}</div>`).join(''):`<div class="empty">${q?'Không tìm thấy script nào.':'Chưa có script nào.'}</div>`;
 }
 $('q').addEventListener('input',render);
 $('go').addEventListener('click',render);
