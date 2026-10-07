@@ -132,7 +132,7 @@ main {
   display: inline-block;
 }
 
-/* Grid Script Cards (Luôn hiện 2 cột trên mọi điện thoại) */
+/* Grid Script Cards (Hiển thị 2 cột trên mọi điện thoại) */
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -241,15 +241,15 @@ const SCRIPTS = [
   {hub:"Chronnix Hub", game:"Ride A Pet", c:"Ride A Pet", link:"https://link4m.net/dURCgx", img:"https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/IMG_4150.jpeg"},
   {hub:"R Hub", game:"Ride A Pet", c:"Ride A Pet", link:"https://link4m.net/Un5BcNem", img:"https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/IMG_4155.jpeg"},
 
-  // Primeval Earth
-  {hub:"Pn Hub", game:"Primeval Earth", c:"Primeval Earth", link:"https://link4m.net/7baHImY", img:"https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/IMG_4156.jpeg"},
-  {hub:"Menu Farm", game:"Primeval Earth", c:"Primeval Earth", link:"https://link4m.org/guPN2", img:"https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/IMG_4158.jpeg"}
+  // Tất cả script khủng long (Primeval Earth)
+  {hub:"Pn Hub", game:"Primeval Earth", c:"Tất cả script khủng long", link:"https://link4m.net/7baHImY", img:"https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/IMG_4156.jpeg"},
+  {hub:"Menu Farm", game:"Primeval Earth", c:"Tất cả script khủng long", link:"https://link4m.org/guPN2", img:"https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/IMG_4158.jpeg"}
 ];
 
 const colors = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b'];
 const $=id=>document.getElementById(id);
 let cat='Tất cả';
-const cats=['Tất cả', 'Steal An Egg', 'Ride A Pet', 'Primeval Earth'];
+const cats=['Tất cả', 'Steal An Egg', 'Ride A Pet', 'Tất cả script khủng long'];
 
 function render(){
   const q = $('q').value.trim().toLowerCase();
