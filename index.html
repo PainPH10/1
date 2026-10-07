@@ -132,14 +132,11 @@ main {
   display: inline-block;
 }
 
-/* Grid Script Cards */
+/* Grid Script Cards (Luôn hiện 2 cột trên mọi điện thoại) */
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
-}
-@media (max-width: 360px) {
-  .grid { grid-template-columns: 1fr; }
 }
 
 .card {
@@ -185,7 +182,6 @@ main {
   color: #0f172a;
   line-height: 1.3;
 }
-/* Game name styling */
 .game-name {
   color: #ec4899;
   font-weight: 700;
