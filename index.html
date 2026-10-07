@@ -95,24 +95,21 @@ main {
   cursor: pointer;
 }
 
-/* Tags Scroll */
+/* Tags Wrap (Tự động xuống hàng khi nhiều tab) */
 .tags {
   display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
   margin-bottom: 16px;
-  scrollbar-width: none;
 }
-.tags::-webkit-scrollbar { display: none; }
 .tags button {
   white-space: nowrap;
   background: #ffffff;
   border: none;
-  padding: 10px 18px;
+  padding: 8px 14px;
   border-radius: 25px;
   font-family: inherit;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--text-sub);
   box-shadow: 0 4px 12px rgba(0,0,0,0.03);
@@ -132,7 +129,7 @@ main {
   display: inline-block;
 }
 
-/* Grid Script Cards (Hiển thị 2 cột trên mọi điện thoại) */
+/* Grid Script Cards (Luôn hiện 2 cột trên mọi điện thoại) */
 .grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -241,20 +238,20 @@ const SCRIPTS = [
   {hub:"Chronnix Hub", game:"Ride A Pet", c:"Ride A Pet", link:"https://link4m.net/dURCgx", img:"https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/IMG_4150.jpeg"},
   {hub:"R Hub", game:"Ride A Pet", c:"Ride A Pet", link:"https://link4m.net/Un5BcNem", img:"https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/IMG_4155.jpeg"},
 
-  // Tất cả script khủng long (Primeval Earth)
-  {hub:"Pn Hub", game:"Primeval Earth", c:"Tất cả script khủng long", link:"https://link4m.net/7baHImY", img:"https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/IMG_4156.jpeg"},
-  {hub:"Menu Farm", game:"Primeval Earth", c:"Tất cả script khủng long", link:"https://link4m.org/guPN2", img:"https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/IMG_4158.jpeg"}
+  // Tất Cả Script Khủng Long (Primeval Earth)
+  {hub:"Pn Hub", game:"Primeval Earth", c:"Tất Cả Script Khủng Long", link:"https://link4m.net/7baHImY", img:"https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/IMG_4156.jpeg"},
+  {hub:"Menu Farm", game:"Primeval Earth", c:"Tất Cả Script Khủng Long", link:"https://link4m.org/guPN2", img:"https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/IMG_4158.jpeg"}
 ];
 
 const colors = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b'];
 const $=id=>document.getElementById(id);
-let cat='Tất cả';
-const cats=['Tất cả', 'Steal An Egg', 'Ride A Pet', 'Tất cả script khủng long'];
+let cat='Tất Cả';
+const cats=['Tất Cả', 'Steal An Egg', 'Ride A Pet', 'Tất Cả Script Khủng Long'];
 
 function render(){
   const q = $('q').value.trim().toLowerCase();
   const filtered = SCRIPTS.filter(s => 
-    (cat === 'Tất cả' || s.c === cat) && 
+    (cat === 'Tất Cả' || s.c === cat) && 
     (!q || s.hub.toLowerCase().includes(q) || s.game.toLowerCase().includes(q) || s.c.toLowerCase().includes(q))
   );
 
