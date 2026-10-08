@@ -258,7 +258,7 @@ const SCRIPTS = [
   {hub:"Infinite Stamina", game:"Illegal Soccer", c:"Tất Cả", link:"https://link4m.net/iKJFmJ2", img:"https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/IMG_4168.jpeg"}
 ];
 
-// Hàm trộn ngẫu nhiên thứ tự (Trộn 1 lần duy nhất khi vừa load trang)
+// Hàm trộn ngẫu nhiên thứ tự (Chỉ trộn 1 lần khi tải trang)
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -274,9 +274,11 @@ const cats=['Tất Cả', 'Steal An Egg', 'Ride A Pet', 'Tất Cả Script Khủ
 
 function render(){
   const q = $('q').value.trim().toLowerCase();
+  
+  // CHỈ LỌC THEO TÊN SCRIPT (hub) HOẶC TÊN GAME (game)
   const filtered = SCRIPTS.filter(s => 
     (cat === 'Tất Cả' || s.c === cat) && 
-    (!q || s.hub.toLowerCase().includes(q) || s.game.toLowerCase().includes(q) || s.c.toLowerCase().includes(q))
+    (!q || s.hub.toLowerCase().includes(q) || s.game.toLowerCase().includes(q))
   );
 
   // Render Tags
