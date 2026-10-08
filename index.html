@@ -257,6 +257,15 @@ const SCRIPTS = [
   {hub:"Infinite Stamina", game:"Illegal Soccer", c:"Tất Cả", link:"https://link4m.net/iKJFmJ2", img:"https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/IMG_4168.jpeg"}
 ];
 
+// Hàm trộn ngẫu nhiên thứ tự (Trộn 1 lần duy nhất khi vừa load trang)
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+shuffle(SCRIPTS);
+
 const colors = ['#8b5cf6', '#ec4899', '#3b82f6', '#10b981', '#f59e0b'];
 const $=id=>document.getElementById(id);
 let cat='Tất Cả';
