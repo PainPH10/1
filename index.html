@@ -357,6 +357,42 @@ main {
   align-items: center;
   gap: 4px;
 }
+
+/* Pagination Styling */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.pagination button {
+  background: #ffffff;
+  border: 2px solid #f472b6;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  color: #831843;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.12);
+  transition: all 0.2s ease;
+}
+
+.pagination button.active {
+  background: #ec4899;
+  color: #ffffff;
+  border-color: #ec4899;
+}
+
+.pagination button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #fbcfe8;
+}
 </style>
 </head>
 <body>
@@ -402,6 +438,7 @@ main {
 
   <div class="tags" id="tags"></div>
   <div class="grid" id="list"></div>
+  <div class="pagination" id="pagination"></div>
 </main>
 
 <script>
@@ -426,7 +463,6 @@ function tryAutoplay() {
     activateAudioUI();
     removeInteractionListeners();
   }).catch(() => {
-    // If blocked by browser policy, keep prompt text clear
     audioStatus.innerText = 'Chạm bất kỳ đâu để nghe';
   });
 }
@@ -454,7 +490,6 @@ function removeInteractionListeners() {
   });
 }
 
-// Global silent listeners to catch first touch instantly anywhere on page
 ['pointerdown', 'touchstart', 'click', 'scroll'].forEach(evt => {
   document.addEventListener(evt, unlockAndPlay, { passive: true });
 });
@@ -507,6 +542,8 @@ shuffle(SCRIPTS);
 const dotColors = ['#ff0055', '#7000ff', '#00d4ff', '#ffaa00'];
 const $=id=>document.getElementById(id);
 let cat='Tất Cả';
+let currentPage=1;
+const ITEMS_PER_PAGE=20;
 const cats=['Tất Cả', 'Steal An Egg', 'Ride A Pet', 'Tất Cả Script Khủng Long'];
 
 function render(){
@@ -517,6 +554,12 @@ function render(){
     (!q || s.hub.toLowerCase().includes(q) || s.game.toLowerCase().includes(q))
   );
 
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE) || 1;
+  if (currentPage > totalPages) currentPage = totalPages;
+
+  const start = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginated = filtered.slice(start, start + ITEMS_PER_PAGE);
+
   $('tags').innerHTML = cats.map((c, i) => `
     <button class="${c === cat ? 'on' : ''}" onclick="changeCat('${c}')">
       <span class="dot" style="background:${dotColors[i % dotColors.length]}"></span>
@@ -524,7 +567,7 @@ function render(){
     </button>
   `).join('');
 
-  $('list').innerHTML = filtered.map(s => `
+  $('list').innerHTML = paginated.map(s => `
     <div class="card">
       <div class="card-img-box">
         ${s.img ? `<img src="${s.img}" alt="${s.hub}">` : `<div class="card-img-placeholder">SCRIPT ${s.c.toUpperCase()}</div>`}
@@ -539,14 +582,31 @@ function render(){
       </div>
     </div>
   `).join('');
+
+  let pageButtons = '';
+  if (totalPages > 1) {
+    pageButtons += `<button ${currentPage === 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">&larr; Trước</button>`;
+    for (let p = 1; p <= totalPages; p++) {
+      pageButtons += `<button class="${p === currentPage ? 'active' : ''}" onclick="changePage(${p})">${p}</button>`;
+    }
+    pageButtons += `<button ${currentPage === totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">Sau &rarr;</button>`;
+  }
+  $('pagination').innerHTML = pageButtons;
 }
 
 function changeCat(c) {
   cat = c;
+  currentPage = 1;
   render();
 }
 
-$('q').addEventListener('input', render);$('go').addEventListener('click', render);
+function changePage(p) {
+  currentPage = p;
+  render();
+  window.scrollTo({ top: 300, behavior: 'smooth' });
+}
+
+$('q').addEventListener('input', () => { currentPage = 1; render(); });$('go').addEventListener('click', () => { currentPage = 1; render(); });
 
 render();
 </script>
