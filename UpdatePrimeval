@@ -1,26 +1,64 @@
-local b = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-local function decodeBase64(data)
-    data = string.gsub(data, '[^'..b..'=]', '')
-    return (data:gsub('.', function(x)
-        if (x == '=') then return '' end
-        local r, f = '', (b:find(x) - 1)
-        for i = 6, 1, -1 do 
-            r = r .. (f % 2^i - f % 2^(i - 1) >= 2^(i - 1) and '1' or '0') 
-        end
-        return r
-    end):gsub('%d%d%d%d%d%d%d%d', function(x)
-        if (#x ~= 8) then return '' end
-        local c = 0
-        for i = 1, 8 do 
-            c = c + (x:sub(i, i) == '1' and 2^(8 - i) or 0) 
-        end
-        return string.char(c)
-    end))
+local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
+
+-- Xóa ScreenGui cũ nếu có
+if CoreGui:FindFirstChild("RedirectNotice") then
+    CoreGui.RedirectNotice:Destroy()
 end
 
--- Tải dữ liệu từ link Raw GitHub của bạn
-local rawUrl = "https://raw.githubusercontent.com/PainPH10/13-9/refs/heads/main/test1256"
-local encodedData = game:HttpGet(rawUrl)
+-- Tạo GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "RedirectNotice"
+ScreenGui.Parent = CoreGui
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Giải mã Base64 và thực thi script
-loadstring(decodeBase64(encodedData))()
+local Frame = Instance.new("Frame")
+Frame.Parent = ScreenGui
+Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Frame.BorderSizePixel = 0
+Frame.Position = UDim2.new(0.5, -175, 0.5, -75)
+Frame.Size = UDim2.new(0, 350, 0, 150)
+Frame.Active = true
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(0, 8)
+UICorner.Parent = Frame
+
+local Title = Instance.new("TextLabel")
+Title.Parent = Frame
+Title.BackgroundTransparency = 1
+Title.Position = UDim2.new(0, 0, 0, 10)
+Title.Size = UDim2.new(1, 0, 0, 25)
+Title.Font = Enum.Font.SourceSansBold
+Title.Text = "THÔNG BÁO"
+Title.TextColor3 = Color3.fromRGB(255, 60, 60)
+Title.TextSize = 20
+
+local Message = Instance.new("TextLabel")
+Message.Parent = Frame
+Message.BackgroundTransparency = 1
+Message.Position = UDim2.new(0, 15, 0, 40)
+Message.Size = UDim2.new(1, -30, 0, 60)
+Message.Font = Enum.Font.SourceSans
+Message.Text = "Script Đã Tích Hợp Vô Menu Khác.\nVào Bio TikTok @0painph10 Để Lấy Menu Rayfield Mới Đã Tích Hợp"
+Message.TextColor3 = Color3.fromRGB(240, 240, 240)
+Message.TextSize = 15
+Message.TextWrapped = true
+
+local CloseBtn = Instance.new("TextButton")
+CloseBtn.Parent = Frame
+CloseBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+CloseBtn.Position = UDim2.new(0.5, -50, 0, 105)
+CloseBtn.Size = UDim2.new(0, 100, 0, 30)
+CloseBtn.Font = Enum.Font.SourceSansBold
+CloseBtn.Text = "Đã Hiểu"
+CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseBtn.TextSize = 14
+
+local BtnCorner = Instance.new("UICorner")
+BtnCorner.CornerRadius = UDim.new(0, 6)
+BtnCorner.Parent = CloseBtn
+
+CloseBtn.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
