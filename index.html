@@ -643,8 +643,17 @@ function render(){
 function changeCat(c) { cat = c; currentPage = 1; render(); }
 function changePage(p) { currentPage = p; render(); window.scrollTo({ top: 300, behavior: 'smooth' }); }
 
-$('q').addEventListener('input', () => { currentPage = 1; render(); });
-$('go').addEventListener('click', () => { currentPage = 1; render(); });
+/* ===== TỰ ĐỘNG CHUYỂN VỀ TAB "TẤT CẢ" KHI GÕ TÌM KIẾM ===== */
+$('q').addEventListener('input', () => {
+  if ($('q').value.trim() !== '') cat = 'Tất Cả';
+  currentPage = 1;
+  render();
+});
+$('go').addEventListener('click', () => {
+  if ($('q').value.trim() !== '') cat = 'Tất Cả';
+  currentPage = 1;
+  render();
+});
 
 // Gọi render() ở cuối cùng để đảm bảo mọi thứ đã load xong
 render();
