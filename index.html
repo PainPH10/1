@@ -191,7 +191,7 @@ body {
 .tt-btn:hover::before { opacity: 1; }
 .tt-btn svg { filter: drop-shadow(0 0 6px rgba(56, 189, 248, 0.65)); }
 
-main { max-width: 600px; margin: 0 auto; padding: 10px 16px; }
+main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
 
 .hero-title {
   text-align: center;
@@ -259,11 +259,11 @@ main { max-width: 600px; margin: 0 auto; padding: 10px 16px; }
   .tags button span.dot { width: 7px; height: 7px; }
 }
 
-/* ===== CHỈNH LẠI THÀNH 1 CỘT DUY NHẤT ===== */
+/* ===== GRID 2 CỘT ===== */
 .grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
 }
 
 .card {
@@ -303,34 +303,34 @@ main { max-width: 600px; margin: 0 auto; padding: 10px 16px; }
 
 .card-img-box img {
   width: 100%; height: 100%; object-fit: cover; 
-  object-position: top center; /* KÉO ẢNH LÊN TRÊN ĐỂ KO BỊ CẮT MẤT ĐẦU */
+  object-position: top center;
   opacity: 0; transition: opacity .35s ease; position: relative; z-index: 2;
 }
 .card-img-box img.img-ready { opacity: 1; }
 
 .card-img-placeholder {
-  color: #ff9ad5; font-weight: 800; font-size: 14px; letter-spacing: 0.5px;
+  color: #ff9ad5; font-weight: 800; font-size: 12px; letter-spacing: 0.5px;
   text-align: center; padding: 0 8px; position: relative; z-index: 2;
   text-shadow: 0 0 12px rgba(236, 72, 153, 0.7);
 }
 
-.card-body { padding: 14px 16px; display: flex; flex-direction: column; flex: 1; }
+.card-body { padding: 12px; display: flex; flex-direction: column; flex: 1; }
 
 .card-title {
-  font-size: 15px; font-weight: 800; margin: 0 0 10px 0; color: var(--text-main); line-height: 1.4;
+  font-size: 13px; font-weight: 800; margin: 0 0 8px 0; color: var(--text-main); line-height: 1.3;
 }
 
 .game-name { color: var(--pink-bright); font-weight: 700; }
 
 .card-footer {
   margin-top: auto; display: flex; justify-content: space-between; align-items: center;
-  gap: 10px; padding-top: 12px; border-top: 1px solid rgba(236, 72, 153, 0.12);
+  gap: 6px; padding-top: 8px; border-top: 1px solid rgba(236, 72, 153, 0.12);
 }
 
 .btn-link {
   flex: 1; text-align: center; background: var(--surface-2); border: 1px solid var(--border-soft);
-  color: #ff9ad5; text-decoration: none; font-weight: 700; font-size: 12px; padding: 10px 0;
-  border-radius: 10px; transition: all .2s ease; display: flex; justify-content: center; align-items: center;
+  color: #ff9ad5; text-decoration: none; font-weight: 700; font-size: 11px; padding: 8px 0;
+  border-radius: 8px; transition: all .2s ease; display: flex; justify-content: center; align-items: center;
 }
 .btn-link:hover { background: var(--border-soft); border-color: var(--border-strong); color: #ffffff; box-shadow: 0 0 15px rgba(236, 72, 153, 0.4); }
 
@@ -522,22 +522,49 @@ const ITEMS_PER_PAGE = 20;
 const cats = ['Tất Cả', 'Steal An Egg', 'Tất Cả Script Khủng Long'];
 
 /* ============ Fast image pipeline ============ */
-const imgObserver = new IntersectionObserver((entries) => {
-  for (const entry of entries) {
-    if (!entry.isIntersecting) continue;
-    const img = entry.target;
-    const url = img.dataset.src;
-    if (url && !img.src) {
-      img.src = url;
-      img.onload = () => {
-        img.classList.add('img-ready');
-        img.closest('.card-img-box')?.classList.add('loaded');
-      };
-      img.onerror = () => img.closest('.card-img-box')?.classList.add('loaded');
+let imgObserver;
+if (typeof IntersectionObserver !== 'undefined') {
+  imgObserver = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      const img = entry.target;
+      const url = img.dataset.src;
+      if (url && !img.src) {
+        img.src = url;
+        img.onload = () => {
+          img.classList.add('img-ready');
+          const box = img.closest('.card-img-box');
+          if (box) box.classList.add('loaded');
+        };
+        img.onerror = () => {
+          const box = img.closest('.card-img-box');
+          if (box) box.classList.add('loaded');
+        };
+      }
+      imgObserver.unobserve(img);
     }
-    imgObserver.unobserve(img);
-  }
-}, { rootMargin: '600px 0px', threshold: 0.01 });
+  }, { rootMargin: '600px 0px', threshold: 0.01 });
+} else {
+  // Fallback cho trình duyệt cũ
+  imgObserver = {
+    observe: (img) => {
+      const url = img.dataset.src;
+      if (url && !img.src) {
+        img.src = url;
+        img.onload = () => {
+          img.classList.add('img-ready');
+          const box = img.closest('.card-img-box');
+          if (box) box.classList.add('loaded');
+        };
+        img.onerror = () => {
+          const box = img.closest('.card-img-box');
+          if (box) box.classList.add('loaded');
+        };
+      }
+    },
+    unobserve: () => {}
+  };
+}
 
 function primeFirstImages(count = 6) {
   const imgs = [...document.querySelectorAll('.card-img-box img[data-src]')].slice(0, count);
@@ -547,9 +574,13 @@ function primeFirstImages(count = 6) {
     img.src = url;
     img.onload = () => {
       img.classList.add('img-ready');
-      img.closest('.card-img-box')?.classList.add('loaded');
+      const box = img.closest('.card-img-box');
+      if (box) box.classList.add('loaded');
     };
-    img.onerror = () => img.closest('.card-img-box')?.classList.add('loaded');
+    img.onerror = () => {
+      const box = img.closest('.card-img-box');
+      if (box) box.classList.add('loaded');
+    };
     imgObserver.unobserve(img);
   });
 }
@@ -615,6 +646,7 @@ function changePage(p) { currentPage = p; render(); window.scrollTo({ top: 300, 
 $('q').addEventListener('input', () => { currentPage = 1; render(); });
 $('go').addEventListener('click', () => { currentPage = 1; render(); });
 
+// Gọi render() ở cuối cùng để đảm bảo mọi thứ đã load xong
 render();
 </script>
 </body>
