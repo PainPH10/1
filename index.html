@@ -12,15 +12,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg-base: #7eb0d5; /* Màu nền xanh của game */
-  --surface: #fcf8eb; /* Màu trắng ngà của thẻ */
-  --surface-2: #e8dfc8; /* Màu be của nút/header */
+  --bg-base: #7eb0d5;
+  --surface: #fcf8eb;
+  --surface-2: #e8dfc8;
   --surface-hover: #ffffff;
-  --border-color: #3b3b3b; /* Viền xám đậm */
+  --border-color: #3b3b3b;
   --text-main: #2b2b2b;
   --text-sub: #555555;
   --text-dim: #888888;
-  --accent-yellow: #ffca3a; /* Màu vàng chủ đạo */
+  --accent-yellow: #ffca3a;
   --accent-green: #5cb85c;
   --radius: 12px;
   --shadow-hard: 4px 4px 0px rgba(0,0,0,0.15);
@@ -185,6 +185,9 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
   text-shadow: 1px 1px 0 var(--border-color);
 }
 
+/* ===== Search wrap + Suggestions ===== */
+.search-wrap { position: relative; margin-bottom: 20px; }
+
 .search-box {
   background: var(--surface);
   border: 3px solid var(--border-color);
@@ -193,7 +196,7 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
   display: flex;
   align-items: center;
   box-shadow: var(--shadow-hard);
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 .search-box input { border: none; outline: none; width: 100%; font-family: inherit; font-size: 15px; color: var(--text-main); background: transparent; font-weight: 500; }
 .search-box input::placeholder { color: var(--text-dim); }
@@ -204,7 +207,47 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
 }
 .search-box button:active { transform: translateY(3px); box-shadow: none; }
 
-/* Cập nhật tags để chứa 4 tab đẹp hơn */
+.suggestions {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0; right: 0;
+  background: var(--surface);
+  border: 3px solid var(--border-color);
+  border-radius: 16px;
+  box-shadow: var(--shadow-hard);
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 100;
+  display: none;
+  padding: 6px;
+}
+.suggestions.show { display: block; }
+.suggestions .sug-item {
+  padding: 10px 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+  transition: background .15s;
+}
+.suggestions .sug-item:hover,
+.suggestions .sug-item.active { background: var(--accent-yellow); }
+
+/* Ẩn nhãn GAME / HUB */
+.suggestions .sug-type { display: none !important; }
+
+.suggestions .sug-empty {
+  padding: 12px;
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 600;
+}
+
 .tags {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
@@ -223,10 +266,9 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
 .tags button.on { background: var(--accent-yellow); color: var(--text-main); }
 .tags button span.dot { flex: 0 0 auto; width: 10px; height: 10px; border-radius: 50%; display: inline-block; border: 2px solid var(--border-color); }
 
-/* ===== GRID LUÔN LUÔN 2 CỘT ===== */
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Ép cứng 2 cột */
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
 
@@ -276,7 +318,6 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
 
 .card-body { padding: 12px; display: flex; flex-direction: column; flex: 1; }
 
-/* TĂNG KÍCH THƯỚC TÊN HUB VÀ TÊN GAME */
 .card-title {
   font-size: 20px; 
   font-weight: 700; 
@@ -319,12 +360,10 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
 .pagination button.active { background: var(--accent-yellow); }
 .pagination button:disabled { opacity: 0.5; cursor: not-allowed; background: #ddd; }
 
-/* Mobile tinh chỉnh cho vừa 2 cột */
 @media (max-width: 480px) {
   .tags { grid-template-columns: repeat(2, 1fr); }
   .grid { gap: 8px; }
   .card-body { padding: 10px 6px; }
-  /* Vẫn giữ chữ to trên điện thoại */
   .card-title { font-size: 16px; } 
   .game-name { font-size: 14px; margin-top: 4px; }
   .btn-link { font-size: 11px; padding: 6px 0; }
@@ -374,9 +413,12 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
   <h1 class="hero-title">Ghi Rõ Tên Game Cần Tìm</h1>
   <div class="hero-sub">Lưu Ý Tìm Kiếm Hãy Ghi Tiếng Anh</div>
 
-  <div class="search-box">
-    <input id="q" type="search" placeholder="Tìm kiếm script...">
-    <button id="go">Tìm</button>
+  <div class="search-wrap">
+    <div class="search-box">
+      <input id="q" type="search" placeholder="Tìm kiếm script..." autocomplete="off" spellcheck="false">
+      <button id="go" type="button">Tìm</button>
+    </div>
+    <div class="suggestions" id="suggestions" role="listbox" aria-label="Gợi ý tìm kiếm"></div>
   </div>
 
   <div class="tags" id="tags"></div>
@@ -621,18 +663,117 @@ function render(){
   $('pagination').innerHTML = pageButtons;
 }
 
-function changeCat(c) { cat = c; currentPage = 1; render(); }
+function changeCat(c) { cat = c; currentPage = 1; render(); hideSuggestions(); }
 function changePage(p) { currentPage = p; render(); window.scrollTo({ top: 300, behavior: 'smooth' }); }
 
-$('q').addEventListener('input', () => {
-  if ($('q').value.trim() !== '') cat = 'Tất Cả';
+/* ============ Suggestions (autocomplete) ============ */
+const inputEl = $('q');
+const sugBox  = $('suggestions');
+let sugItems = [];
+let sugActiveIdx = -1;
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function hideSuggestions() {
+  sugBox.classList.remove('show');
+  sugBox.innerHTML = '';
+  sugItems = [];
+  sugActiveIdx = -1;
+}
+
+function showSuggestions(query) {
+  const q = query.trim().toLowerCase();
+  // Chỉ gợi ý khi đã có chữ — bấm vào ô trống thì im lặng
+  if (!q) { hideSuggestions(); return; }
+
+  const gameSet = new Set();
+  const hubSet  = new Set();
+  SCRIPTS.forEach(s => {
+    if (s.game && s.game.toLowerCase().includes(q)) gameSet.add(s.game);
+    if (s.hub  && s.hub.toLowerCase().includes(q))  hubSet.add(s.hub);
+  });
+
+  sugItems = [
+    ...[...gameSet].slice(0, 6).map(v => ({ type: 'Game', label: v })),
+    ...[...hubSet ].slice(0, 6).map(v => ({ type: 'Hub',  label: v })),
+  ];
+  sugActiveIdx = -1;
+
+  if (!sugItems.length) {
+    sugBox.innerHTML = `<div class="sug-empty">Không có gợi ý — thử từ khóa khác</div>`;
+    sugBox.classList.add('show');
+    return;
+  }
+
+  sugBox.innerHTML = sugItems.map((it, i) => `
+    <div class="sug-item" data-idx="${i}">
+      <span class="sug-label">${esc(it.label)}</span>
+    </div>
+  `).join('');
+  sugBox.classList.add('show');
+
+  sugBox.querySelectorAll('.sug-item').forEach(el => {
+    el.addEventListener('click', () => pickSuggestion(Number(el.dataset.idx)));
+  });
+}
+
+function pickSuggestion(idx) {
+  const it = sugItems[idx];
+  if (!it) return;
+  inputEl.value = it.label;
+  cat = 'Tất Cả';
   currentPage = 1;
   render();
+  hideSuggestions();
+  inputEl.blur();
+}
+
+function highlightSuggestion(newIdx) {
+  const nodes = sugBox.querySelectorAll('.sug-item');
+  if (!nodes.length) return;
+  sugActiveIdx = (newIdx + nodes.length) % nodes.length;
+  nodes.forEach((n, i) => n.classList.toggle('active', i === sugActiveIdx));
+  nodes[sugActiveIdx].scrollIntoView({ block: 'nearest' });
+}
+
+/* Gõ chữ mới gợi ý */
+inputEl.addEventListener('input', () => {
+  if (inputEl.value.trim() !== '') cat = 'Tất Cả';
+  currentPage = 1;
+  render();
+  showSuggestions(inputEl.value);
 });
+
+/* Điều hướng bằng phím */
+inputEl.addEventListener('keydown', (e) => {
+  if (!sugBox.classList.contains('show')) {
+    if (e.key === 'Enter' && inputEl.value.trim() !== '') {
+      cat = 'Tất Cả'; currentPage = 1; render();
+    }
+    return;
+  }
+  if (e.key === 'ArrowDown') { e.preventDefault(); highlightSuggestion(sugActiveIdx + 1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); highlightSuggestion(sugActiveIdx - 1); }
+  else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (sugActiveIdx >= 0) pickSuggestion(sugActiveIdx);
+    else { if (inputEl.value.trim() !== '') { cat = 'Tất Cả'; currentPage = 1; render(); } hideSuggestions(); }
+  } else if (e.key === 'Escape') {
+    hideSuggestions();
+  }
+});
+
+/* Nút Tìm */
 $('go').addEventListener('click', () => {
-  if ($('q').value.trim() !== '') cat = 'Tất Cả';
+  if (inputEl.value.trim() !== '') cat = 'Tất Cả';
   currentPage = 1;
   render();
+  hideSuggestions();
+});
+
+/* Click ra ngoài thì ẩn gợi ý */
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.search-wrap')) hideSuggestions();
 });
 
 render();
