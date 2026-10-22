@@ -12,10 +12,8 @@
   --bg-base: #7eb0d5;
   --surface: #fcf8eb;
   --surface-2: #e8dfc8;
-  --surface-hover: #ffffff;
   --border-color: #3b3b3b;
   --text-main: #2b2b2b;
-  --text-sub: #555555;
   --text-dim: #888888;
   --accent-yellow: #ffca3a;
   --accent-green: #5cb85c;
@@ -29,7 +27,7 @@ html { color-scheme: light; }
 body {
   margin: 0;
   background-color: var(--bg-base);
-  background-image: 
+  background-image:
     linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px);
   background-size: 40px 40px;
@@ -64,12 +62,10 @@ body {
   transition: transform 0.3s ease, border-color 0.3s ease;
   will-change: transform;
 }
-
 .avatar-wrapper.playing {
   animation: musicPulse 1.2s infinite alternate ease-in-out;
   border-color: var(--accent-yellow);
 }
-
 @keyframes musicPulse {
   0%   { transform: scale(1); }
   100% { transform: scale(1.05); }
@@ -140,7 +136,6 @@ body {
 .playing .eq-bar:nth-child(2) { animation-delay: 0.3s; }
 .playing .eq-bar:nth-child(3) { animation-delay: 0.2s; }
 .playing .eq-bar:nth-child(4) { animation-delay: 0.4s; }
-
 @keyframes wave {
   0%   { transform: scaleY(0.22); }
   100% { transform: scaleY(1); }
@@ -173,10 +168,8 @@ body {
   box-shadow: var(--shadow-btn);
   transition: transform 0.1s, box-shadow 0.1s;
 }
-
 .yt-btn { background: #ff0000; }
 .tt-btn { background: #000000; }
-
 .yt-btn:active, .tt-btn:active { transform: translateY(4px); box-shadow: none; }
 
 main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
@@ -202,6 +195,8 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
   text-shadow: 1px 1px 0 var(--border-color);
 }
 
+.search-wrap { position: relative; }
+
 .search-box {
   background: var(--surface);
   border: 3px solid var(--border-color);
@@ -225,13 +220,68 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
 }
 .search-box button:active { transform: translateY(3px); box-shadow: none; }
 
+.suggestions {
+  position: absolute;
+  top: calc(100% - 12px);
+  left: 0; right: 0;
+  background: var(--surface);
+  border: 3px solid var(--border-color);
+  border-radius: 14px;
+  box-shadow: var(--shadow-hard);
+  max-height: 340px;
+  overflow-y: auto;
+  z-index: 50;
+  display: none;
+  -webkit-overflow-scrolling: touch;
+}
+.suggestions.open { display: block; }
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(0,0,0,0.07);
+  transition: background-color 0.1s;
+}
+.suggestion-item:last-child { border-bottom: none; }
+.suggestion-item:hover,
+.suggestion-item.active { background: var(--accent-yellow); }
+.suggestion-item .s-text {
+  font-weight: 600; color: var(--text-main);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; flex: 1;
+}
+.suggestion-item mark {
+  background: transparent;
+  color: #e63946;
+  font-weight: 800;
+}
+.suggestion-head {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 8px 16px 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  background: var(--surface-2);
+  border-bottom: 2px solid rgba(0,0,0,0.08);
+  border-radius: 10px 10px 0 0;
+}
+.suggestion-empty {
+  padding: 16px; text-align: center;
+  color: var(--text-dim); font-size: 13px; font-weight: 500;
+}
+
 .tags {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 10px;
   margin-bottom: 20px;
 }
-
 .tags button {
   width: 100%; min-width: 0; background: var(--surface); border: 3px solid var(--border-color);
   padding: 8px 6px; border-radius: 20px; font-family: inherit; font-size: 13px; font-weight: 700;
@@ -278,7 +328,6 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
   position: relative;
   border-bottom: 3px solid var(--border-color);
 }
-
 .card-img-box::before {
   content: '';
   position: absolute;
@@ -288,25 +337,17 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
   opacity: 1;
   transition: opacity 0.35s ease;
 }
-.card-img-box:not(.loaded)::before {
-  animation: pulseLoad 1.5s ease-in-out infinite;
-}
+.card-img-box:not(.loaded)::before { animation: pulseLoad 1.5s ease-in-out infinite; }
 .card-img-box.loaded::before { opacity: 0; pointer-events: none; }
-
 @keyframes pulseLoad {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.65; }
 }
-
 .card-img-box img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  width: 100%; height: 100%; object-fit: cover;
   object-position: top center;
-  opacity: 0;
-  transition: opacity 0.35s ease;
-  position: relative;
-  z-index: 2;
+  opacity: 0; transition: opacity 0.35s ease;
+  position: relative; z-index: 2;
 }
 .card-img-box img.img-ready { opacity: 1; }
 
@@ -362,7 +403,6 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
   transition: transform 0.1s, box-shadow 0.1s, background-color 0.1s;
 }
 .btn-link:active { transform: translateY(3px); box-shadow: none; background: #f0f0f0; }
-
 .btn-sub { background: #f4f4f4; }
 
 .pagination { display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 30px; flex-wrap: wrap; }
@@ -384,14 +424,13 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
   .game-name { font-size: 14px; margin-top: 4px; }
   .btn-link { font-size: 11px; padding: 6px 0; }
   .card { contain-intrinsic-size: auto 260px; }
+  .suggestion-item { padding: 9px 12px; font-size: 13px; }
 }
 </style>
 </head>
 <body>
 
-<audio id="bgAudio" loop playsinline preload="auto">
-  <source src="./nhac.mp4" type="audio/mpeg">
-</audio>
+<audio id="bgAudio" src="./nhac.mp4" loop preload="metadata"></audio>
 
 <div class="header-container">
   <div class="avatar-wrapper" id="avatarFrame">
@@ -430,9 +469,12 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
   <h1 class="hero-title">Ghi Rõ Tên Game Cần Tìm</h1>
   <div class="hero-sub">Lưu Ý Tìm Kiếm Hãy Ghi Tiếng Anh</div>
 
-  <div class="search-box">
-    <input id="q" type="search" placeholder="Tìm kiếm script...">
-    <button id="go">Tìm</button>
+  <div class="search-wrap">
+    <div class="search-box">
+      <input id="q" type="search" placeholder="Tìm kiếm script..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
+      <button id="go">Tìm</button>
+    </div>
+    <div class="suggestions" id="suggestions"></div>
   </div>
 
   <div class="tags" id="tags"></div>
@@ -441,15 +483,17 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
 </main>
 
 <script>
-/* ============ Audio ============ */
+/* ============ Audio (FIXED) ============ */
 const audio = document.getElementById('bgAudio');
 const avatarFrame = document.getElementById('avatarFrame');
 const playerWidget = document.getElementById('playerWidget');
 const audioStatus = document.getElementById('audioStatus');
 const iconBadge = document.getElementById('iconBadge');
 let isPlaying = false;
+let playLock = false;
 
 function activateAudioUI() {
+  if (isPlaying) return;
   isPlaying = true;
   avatarFrame.classList.add('playing');
   playerWidget.classList.add('playing');
@@ -463,28 +507,30 @@ function removeInteractionListeners() {
   );
 }
 
-function unlockAndPlay() {
-  if (isPlaying) return;
+function safePlay() {
+  if (playLock) return;
+  if (!audio.paused && !audio.ended) { activateAudioUI(); return; }
+  playLock = true;
   audio.play().then(() => {
-    activateAudioUI();
-    removeInteractionListeners();
-  }).catch(() => {});
-}
-
-function manualPlayTrigger() {
-  if (audio.paused) {
-    audio.play().then(activateAudioUI).catch(() => {});
-  }
-}
-
-function tryAutoplay() {
-  audio.play().then(() => {
+    playLock = false;
     activateAudioUI();
     removeInteractionListeners();
   }).catch(() => {
-    audioStatus.innerText = 'Chạm bất kỳ đâu để nghe';
+    playLock = false;
+    if (!isPlaying) audioStatus.innerText = 'Chạm bất kỳ đâu để nghe';
   });
 }
+
+function unlockAndPlay() { if (!isPlaying) safePlay(); }
+function manualPlayTrigger() { if (audio.paused) safePlay(); }
+function tryAutoplay() { safePlay(); }
+
+audio.addEventListener('error', () => {
+  const code = audio.error?.code;
+  const msgs = {1:'ABORTED',2:'NETWORK',3:'DECODE',4:'SRC_NOT_SUPPORTED'};
+  console.error('Audio error:', code, msgs[code] || audio.error?.message);
+  audioStatus.innerText = 'Lỗi nhạc: ' + (msgs[code] || 'không rõ');
+});
 
 ['pointerdown','touchstart','click','scroll'].forEach(evt => {
   document.addEventListener(evt, unlockAndPlay, { passive: true });
@@ -593,7 +639,6 @@ function loadImage(img) {
     img.classList.add('img-ready');
     markLoaded(img);
   };
-
   img.onerror = () => {
     if (fallback && img.getAttribute('src') !== fallback) {
       img.onerror = () => markLoaded(img);
@@ -602,7 +647,6 @@ function loadImage(img) {
       markLoaded(img);
     }
   };
-
   img.src = primary;
 }
 
@@ -617,19 +661,240 @@ if (typeof IntersectionObserver !== 'undefined') {
     }
   }, { rootMargin: '200px 0px', threshold: 0.01 });
 } else {
-  imgObserver = {
-    observe: (img) => loadImage(img),
-    unobserve: () => {}
-  };
+  imgObserver = { observe: (img) => loadImage(img), unobserve: () => {} };
 }
 
 function primeFirstImages(count) {
   const imgs = [...document.querySelectorAll('.card-img-box img[data-src]')].slice(0, count);
-  imgs.forEach(img => {
-    loadImage(img);
-    imgObserver.unobserve(img);
-  });
+  imgs.forEach(img => { loadImage(img); imgObserver.unobserve(img); });
 }
+
+/* ============ SEARCH SUGGESTIONS ============ */
+const suggestionIndex = (() => {
+  const gameMap = new Map();
+  const hubMap = new Map();
+  SCRIPTS.forEach(s => {
+    if (s.game) {
+      const k = s.game.toLowerCase();
+      if (!gameMap.has(k)) gameMap.set(k, s.game);
+    }
+    if (s.hub) {
+      const k = s.hub.toLowerCase();
+      if (!hubMap.has(k)) hubMap.set(k, s.hub);
+    }
+  });
+  return { games: [...gameMap.values()], hubs: [...hubMap.values()] };
+})();
+
+const MAX_SUGGESTIONS = 8;
+let currentSuggestions = [];
+let activeIndex = -1;
+let debounceTimer;
+
+function escapeHtml(str) {
+  return String(str).replace(/[&<>"']/g, ch => (
+    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]
+  ));
+}
+
+function highlightMatch(text, query) {
+  const safe = escapeHtml(text);
+  const q = query.trim();
+  if (!q) return safe;
+  const idx = text.toLowerCase().indexOf(q.toLowerCase());
+  if (idx === -1) return safe;
+  const before = escapeHtml(text.slice(0, idx));
+  const match = escapeHtml(text.slice(idx, idx + q.length));
+  const after = escapeHtml(text.slice(idx + q.length));
+  return `${before}<mark>${match}</mark>${after}`;
+}
+
+function getSuggestions(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return [];
+  const score = (text) => text.toLowerCase().startsWith(q) ? 0 : 1;
+  const games = suggestionIndex.games
+    .filter(g => g.toLowerCase().includes(q))
+    .map(g => ({ type: 'game', text: g }));
+  const hubs = suggestionIndex.hubs
+    .filter(h => h.toLowerCase().includes(q))
+    .map(h => ({ type: 'hub', text: h }));
+  return [...games, ...hubs]
+    .sort((a, b) => score(a.text) - score(b.text))
+    .slice(0, MAX_SUGGESTIONS);
+}
+
+/* ===== Gợi ý mặc định: hiện mỗi lần bấm vào ô tìm kiếm ===== */
+const POPULAR_NAMES = [
+  'Blox Fruits', 'Steal An Egg', 'Fisch', 'Heavyweight Fishing', 'Primeval Earth',
+  'Evade', 'Ride A Pet', 'Attack On Titan Revolution', 'Deep Fishing',
+  'Break And Steal An Egg', 'Creatures Of Sonaria', 'Huss Valley', 'Pixel Blade',
+  'lllegal Soccer', 'Prehistoric Farm', 'Ride A Dino', 'My Dino Life',
+  'Harpoon A Fish', 'Chop A Forest', 'Evolve A Cell'
+];
+
+const defaultPool = (() => {
+  const gamesLower = new Map(suggestionIndex.games.map(g => [g.toLowerCase(), g]));
+  const hubsLower = new Map(suggestionIndex.hubs.map(h => [h.toLowerCase(), h]));
+  const out = [];
+  const seen = new Set();
+
+  POPULAR_NAMES.forEach(name => {
+    const k = name.toLowerCase();
+    const text = gamesLower.get(k) || hubsLower.get(k);
+    if (text && !seen.has(k)) {
+      seen.add(k);
+      out.push({ type: gamesLower.has(k) ? 'game' : 'hub', text });
+    }
+  });
+
+  suggestionIndex.hubs.forEach(h => {
+    const k = h.toLowerCase();
+    if (!seen.has(k)) { seen.add(k); out.push({ type: 'hub', text: h }); }
+  });
+  suggestionIndex.games.forEach(g => {
+    const k = g.toLowerCase();
+    if (!seen.has(k)) { seen.add(k); out.push({ type: 'game', text: g }); }
+  });
+
+  return out;
+})();
+
+function getDefaultSuggestions() {
+  if (!defaultPool.length) return [];
+  const arr = defaultPool.slice();
+  shuffle(arr);
+  return arr.slice(0, MAX_SUGGESTIONS);
+}
+
+function closeSuggestions() {
+  const box = $('suggestions');
+  box.classList.remove('open');
+  box.innerHTML = '';
+  currentSuggestions = [];
+  activeIndex = -1;
+}
+
+function renderSuggestions(query, openWhenEmpty = false) {
+  const box = $('suggestions');
+  const q = query.trim();
+  let list;
+  let isDefault = false;
+
+  if (!q) {
+    if (!openWhenEmpty) { closeSuggestions(); return; }
+    list = getDefaultSuggestions();
+    isDefault = true;
+  } else {
+    list = getSuggestions(query);
+  }
+
+  currentSuggestions = list;
+  activeIndex = -1;
+
+  if (!list.length) {
+    box.innerHTML = `<div class="suggestion-empty">Không tìm thấy "${escapeHtml(q)}"</div>`;
+    box.classList.add('open');
+    return;
+  }
+
+  const head = isDefault ? `<div class="suggestion-head">Gợi ý cho bạn</div>` : '';
+
+  box.innerHTML = head + list.map((s, i) => `
+    <div class="suggestion-item" data-index="${i}" onpointerdown="pickSuggestion(${i}, event)">
+      <span class="s-text">${isDefault ? escapeHtml(s.text) : highlightMatch(s.text, q)}</span>
+    </div>
+  `).join('');
+
+  box.classList.add('open');
+}
+
+function updateActive() {
+  document.querySelectorAll('.suggestion-item').forEach((el, i) => {
+    el.classList.toggle('active', i === activeIndex);
+  });
+  const active = document.querySelector('.suggestion-item.active');
+  if (active) active.scrollIntoView({ block: 'nearest' });
+}
+
+function pickSuggestion(i, e) {
+  if (e) e.preventDefault();
+  const s = currentSuggestions[i];
+  if (!s) return;
+  $('q').value = s.text;
+  $('suggestions').classList.remove('open');
+  clearTimeout(debounceTimer);
+  cat = 'Tất Cả';
+  currentPage = 1;
+  render();
+}
+
+document.addEventListener('pointerdown', (e) => {
+  if (!e.target.closest('.search-wrap')) {
+    $('suggestions').classList.remove('open');
+  }
+});
+
+$('q').addEventListener('keydown', (e) => {
+  const box = $('suggestions');
+  const isOpen = box.classList.contains('open');
+
+  if (e.key === 'ArrowDown') {
+    if (!isOpen || !currentSuggestions.length) { renderSuggestions($('q').value, true); return; }
+    e.preventDefault();
+    activeIndex = (activeIndex + 1) % currentSuggestions.length;
+    updateActive();
+  } else if (e.key === 'ArrowUp') {
+    if (!isOpen || !currentSuggestions.length) return;
+    e.preventDefault();
+    activeIndex = activeIndex <= 0 ? currentSuggestions.length - 1 : activeIndex - 1;
+    updateActive();
+  } else if (e.key === 'Enter') {
+    e.preventDefault();
+    if (isOpen && activeIndex >= 0) {
+      pickSuggestion(activeIndex);
+    } else {
+      box.classList.remove('open');
+      clearTimeout(debounceTimer);
+      if ($('q').value.trim() !== '') cat = 'Tất Cả';
+      currentPage = 1;
+      render();
+    }
+  } else if (e.key === 'Escape') {
+    box.classList.remove('open');
+    activeIndex = -1;
+  }
+});
+
+$('q').addEventListener('input', () => {
+  const val = $('q').value;
+  renderSuggestions(val, true);
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    if (val.trim() !== '') cat = 'Tất Cả';
+    currentPage = 1;
+    render();
+  }, 200);
+});
+
+/* Mở gợi ý ngay khi bấm / chạm vào ô tìm kiếm */
+$('q').addEventListener('focus', () => {
+  renderSuggestions($('q').value, true);
+});
+
+$('q').addEventListener('click', () => {
+  if (!$('suggestions').classList.contains('open')) {
+    renderSuggestions($('q').value, true);
+  }
+});
+
+$('go').addEventListener('click', () => {
+  clearTimeout(debounceTimer);
+  if ($('q').value.trim() !== '') cat = 'Tất Cả';
+  currentPage = 1;
+  $('suggestions').classList.remove('open');
+  render();
+});
 
 /* ============ Render ============ */
 function render() {
@@ -691,23 +956,6 @@ function render() {
 
 function changeCat(c) { cat = c; currentPage = 1; render(); }
 function changePage(p) { currentPage = p; render(); window.scrollTo({ top: 300, behavior: 'smooth' }); }
-
-let debounceTimer;
-$('q').addEventListener('input', () => {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => {
-    if ($('q').value.trim() !== '') cat = 'Tất Cả';
-    currentPage = 1;
-    render();
-  }, 200);
-});
-
-$('go').addEventListener('click', () => {
-  clearTimeout(debounceTimer);
-  if ($('q').value.trim() !== '') cat = 'Tất Cả';
-  currentPage = 1;
-  render();
-});
 
 render();
 </script>
