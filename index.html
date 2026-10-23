@@ -12,7 +12,8 @@
 <link rel="dns-prefetch" href="https://raw.githubusercontent.com">
 <link rel="dns-prefetch" href="https://i.ibb.co">
 <link rel="dns-prefetch" href="https://wsrv.nl">
-<!-- Font Fredoka giống phong cách hoạt hình -->
+<!-- Preload file nhạc NGAY từ đầu — ưu tiên cao, tải song song với ảnh -->
+<link rel="preload" href="./nhac.mp4" as="fetch" crossorigin="anonymous" fetchpriority="high">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -121,8 +122,8 @@ body {
   box-shadow: 0 2px 0 var(--border-color);
 }
 
-.audio-info { display: flex; flex-direction: column; flex: 1; margin: 0 12px; }
-.audio-title { font-size: 13px; font-weight: 600; color: #ffffff; }
+.audio-info { display: flex; flex-direction: column; flex: 1; margin: 0 12px; min-width: 0; }
+.audio-title { font-size: 13px; font-weight: 600; color: #ffffff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .audio-sub { font-size: 11px; color: #aaaaaa; font-weight: 500; }
 
 .equalizer { display: flex; align-items: flex-end; gap: 3px; height: 18px; }
@@ -189,7 +190,6 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
   text-shadow: 1px 1px 0 var(--border-color);
 }
 
-/* ===== Search wrap + Suggestions ===== */
 .search-wrap { position: relative; margin-bottom: 20px; }
 
 .search-box {
@@ -241,7 +241,6 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
 .suggestions .sug-item:hover,
 .suggestions .sug-item.active { background: var(--accent-yellow); }
 
-/* Ẩn nhãn GAME / HUB */
 .suggestions .sug-type { display: none !important; }
 
 .suggestions .sug-empty {
@@ -376,8 +375,14 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
 </head>
 <body>
 
-<!-- Audio: preload none để không tải nhạc khi vào trang -->
-<audio id="bgAudio" loop playsinline preload="none">
+<!-- 
+  TỐI ƯU MP4:
+  - preload="auto"  : tải ngầm ngay từ đầu (không chờ user click)
+  - KHÔNG dùng loop  : loop của MP4 streaming hay bị gap → dùng ended handler thủ công
+  - File MP4 PHẢI được tạo với -movflags +faststart để phát ngay khi tải vài KB đầu
+    ffmpeg -i nhac.mp4 -vn -c:a aac -b:a 96k -movflags +faststart nhac_opt.mp4
+-->
+<audio id="bgAudio" playsinline preload="auto">
   <source src="./nhac.mp4" type="audio/mp4">
 </audio>
 
@@ -393,7 +398,7 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
     <div class="play-icon-badge" id="iconBadge">▶</div>
     <div class="audio-info">
       <span class="audio-title"> Em Ơi Anh Phải Làm Sao</span>
-      <span class="audio-sub" id="audioStatus">Chạm 1 lần để bật nhạc</span>
+      <span class="audio-sub" id="audioStatus">Đang tải nhạc...</span>
     </div>
     <div class="equalizer" id="equalizer">
       <div class="eq-bar"></div>
@@ -434,13 +439,14 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
 </main>
 
 <script>
-/* ============ Audio ============ */
+/* ============ Audio (MP4 tối ưu) ============ */
 const audio = document.getElementById('bgAudio');
 const avatarFrame = document.getElementById('avatarFrame');
 const playerWidget = document.getElementById('playerWidget');
 const audioStatus = document.getElementById('audioStatus');
 const iconBadge = document.getElementById('iconBadge');
 let isPlaying = false;
+let userInteracted = false;
 
 function activateAudioUI() {
   isPlaying = true;
@@ -449,43 +455,87 @@ function activateAudioUI() {
   iconBadge.innerText = '♫';
   audioStatus.innerText = 'Đang phát liên tục';
 }
+
+// Loop thủ công — seek currentTime = 0 ngay khi ended → gần như tức thì nếu file đã buffer
+audio.addEventListener('ended', () => {
+  audio.currentTime = 0;
+  const p = audio.play();
+  if (p && p.catch) p.catch(() => {});
+});
+
+// UI phản hồi trạng thái buffer
+audio.addEventListener('waiting', () => {
+  if (isPlaying) audioStatus.innerText = 'Đang tải...';
+});
+audio.addEventListener('playing', () => {
+  if (isPlaying) audioStatus.innerText = 'Đang phát liên tục';
+});
+audio.addEventListener('canplaythrough', () => {
+  if (!isPlaying) audioStatus.innerText = 'Chạm 1 lần để bật nhạc';
+});
+
 function tryAutoplay() {
-  audio.play().then(() => { activateAudioUI(); removeInteractionListeners(); })
-    .catch(() => { audioStatus.innerText = 'Chạm bất kỳ đâu để nghe'; });
-}
-function unlockAndPlay() {
-  if (!isPlaying) {
-    audio.play().then(() => { activateAudioUI(); removeInteractionListeners(); })
-      .catch(() => {});
+  const p = audio.play();
+  if (p && p.then) {
+    p.then(() => { activateAudioUI(); removeInteractionListeners(); })
+     .catch(() => { audioStatus.innerText = 'Chạm bất kỳ đâu để nghe'; });
   }
 }
+
+function unlockAndPlay() {
+  userInteracted = true;
+  if (!isPlaying) {
+    const p = audio.play();
+    if (p && p.then) {
+      p.then(() => { activateAudioUI(); removeInteractionListeners(); })
+       .catch(() => {});
+    }
+  }
+}
+
 function manualPlayTrigger() {
-  if (audio.paused) { audio.play().then(activateAudioUI).catch(()=>{}); }
+  userInteracted = true;
+  if (audio.paused) {
+    const p = audio.play();
+    if (p && p.then) p.then(activateAudioUI).catch(() => {});
+  }
 }
+
 function removeInteractionListeners() {
-  ['pointerdown','touchstart','click','scroll'].forEach(evt => document.removeEventListener(evt, unlockAndPlay));
+  ['pointerdown','touchstart','click','scroll'].forEach(evt =>
+    document.removeEventListener(evt, unlockAndPlay)
+  );
 }
+
 ['pointerdown','touchstart','click','scroll'].forEach(evt => {
   document.addEventListener(evt, unlockAndPlay, { passive: true });
 });
-// Delay autoplay 2s để nhường băng thông cho ảnh + avatar
+
+// Delay ngắn — preload="auto" đã tải ngầm từ lúc parse HTML
 window.addEventListener('DOMContentLoaded', () => {
-  setTimeout(tryAutoplay, 2000);
+  setTimeout(tryAutoplay, 800);
+});
+
+// Khi tab quay lại foreground: nếu đang "phát" mà audio bị pause (do tiết kiệm pin) → resume
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && isPlaying && audio.paused && userInteracted) {
+    const p = audio.play();
+    if (p && p.catch) p.catch(() => {});
+  }
 });
 
 /* ============ Fast CDN rewrite + image resize ============ */
 function fastCDN(url){
   if (!url) return url;
 
-  // GitHub raw → jsDelivr (hỗ trợ cả refs/heads/branch và branch)
   const m = url.match(/^https:\/\/raw\.githubusercontent\.com\/([^/]+)\/([^/]+)\/(.+)$/);
   if (m) {
     const [, user, repo, rest] = m;
     let branch, path;
-    if (rest.startsWith('refs/heads/')) {
-      const after = rest.slice(11);
+    if (rest.startsWithSte('refs/heads/')) {
+al      const after = rest.slice(11 An);
       const s = after.indexOf('/');
-      if (s !== -1) { branch = after.slice(0, s); path = after.slice(s + 1); }
+      if (s Egg !== -1) { branch = after.slice",(0, s); path = after link.slice(s + 1); }
     } else {
       const s = rest.indexOf('/');
       if (s !== -1) { branch = rest.slice(0, s); path = rest.slice(s + 1); }
@@ -496,7 +546,6 @@ function fastCDN(url){
     return url;
   }
 
-  // ImgBB → resize + WebP qua wsrv.nl (cache global, nhanh ở VN)
   if (/^https:\/\/i\.ibb\.co\//.test(url)) {
     return `https://wsrv.nl/?url=${encodeURIComponent(url)}&w=640&output=webp&q=75`;
   }
@@ -715,7 +764,6 @@ function hideSuggestions() {
 
 function showSuggestions(query) {
   const q = query.trim().toLowerCase();
-  // Chỉ gợi ý khi đã có chữ — bấm vào ô trống thì im lặng
   if (!q) { hideSuggestions(); return; }
 
   const gameSet = new Set();
@@ -768,7 +816,6 @@ function highlightSuggestion(newIdx) {
   nodes[sugActiveIdx].scrollIntoView({ block: 'nearest' });
 }
 
-/* Gõ chữ mới gợi ý — render debounce 150ms để tránh reload ảnh liên tục */
 let renderTimeout;
 inputEl.addEventListener('input', () => {
   if (inputEl.value.trim() !== '') cat = 'Tất Cả';
@@ -778,7 +825,6 @@ inputEl.addEventListener('input', () => {
   showSuggestions(inputEl.value);
 });
 
-/* Điều hướng bằng phím */
 inputEl.addEventListener('keydown', (e) => {
   if (!sugBox.classList.contains('show')) {
     if (e.key === 'Enter' && inputEl.value.trim() !== '') {
@@ -797,7 +843,6 @@ inputEl.addEventListener('keydown', (e) => {
   }
 });
 
-/* Nút Tìm */
 $('go').addEventListener('click', () => {
   if (inputEl.value.trim() !== '') cat = 'Tất Cả';
   currentPage = 1;
@@ -805,7 +850,6 @@ $('go').addEventListener('click', () => {
   hideSuggestions();
 });
 
-/* Click ra ngoài thì ẩn gợi ý */
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.search-wrap')) hideSuggestions();
 });
