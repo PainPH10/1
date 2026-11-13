@@ -48,11 +48,59 @@ body {
 }
 
 .header-container {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 30px 20px 10px 20px;
+  max-width: 460px;
+  margin: 0 auto;
+}
+
+/* ===== Ảnh ủng hộ ad (góc trên bên phải, kế avatar) ===== */
+.support-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 108px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 20;
+  animation: badgeFloat 2.8s ease-in-out infinite;
+}
+
+@keyframes badgeFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.support-badge img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+  border-radius: 12px;
+  border: 3px solid var(--border-color);
+  box-shadow: var(--shadow-hard);
+  background: #fff;
+}
+
+.support-badge .support-text {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.25;
+  text-align: center;
+  color: #ffffff;
+  background: #e63946;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 3px 6px;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.2);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.35);
 }
 
 .avatar-wrapper {
@@ -371,6 +419,10 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
   .card-title { font-size: 16px; } 
   .game-name { font-size: 14px; margin-top: 4px; }
   .btn-link { font-size: 11px; padding: 6px 0; }
+
+  /* Badge nhỏ lại cho gọn trên điện thoại */
+  .support-badge { width: 78px; top: 8px; right: 8px; gap: 4px; }
+  .support-badge .support-text { font-size: 9px; padding: 2px 4px; border-radius: 6px; }
 }
 </style>
 </head>
@@ -382,6 +434,14 @@ main { max-width: 800px; margin: 0 auto; padding: 10px 16px; }
 </audio>
 
 <div class="header-container">
+
+  <!-- ===== Ảnh ủng hộ ad + chữ ===== -->
+  <div class="support-badge">
+    <img src="https://wsrv.nl/?url=https%3A%2F%2Fi.ibb.co%2FWNy4m01H%2FIMG-5965.jpg&w=240&h=240&fit=cover&output=webp&q=80"
+         alt="Ủng hộ ad" decoding="async" fetchpriority="high">
+    <span class="support-text">Ae Ủng Hộ Ad 1-2k Với 😭</span>
+  </div>
+
   <div class="avatar-wrapper" id="avatarFrame">
     <img class="avatar-img"
          src="https://wsrv.nl/?url=https%3A%2F%2Fraw.githubusercontent.com%2FPainPH10%2F1%2Frefs%2Fheads%2Fmain%2FIMG_4609.jpeg&w=200&output=webp&q=80"
